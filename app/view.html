@@ -13,14 +13,31 @@
   <button type="button" onclick="sendRequest();">Request</button>
   <button type="button" onclick="hangUp();">Hang Up</button>
   <br />
+  <ul id="chatList"></ul>
+  <input type="text" id="textInput" placeholder="新しいコメントを入力" />
+  <button onclick="sendChat()">チャットを送信</button>
   <div style="position: relative">
     <video id="remote-video" autoplay style="width: 320px; height: 240px; border: 1px solid black"></video>
   </div>
   <script>
     var remoteVideo = document.getElementById("remote-video");
-    var mediaConstraints = {
-      mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true },
-    };
+    var chatComments = [];
+
+    function reloadChatList() {
+      const chatList = document.getElementById("chatList");
+      chatList.innerHTML = "";
+      chatComments.forEach((item) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = item;
+        chatList.appendChild(listItem);
+      });
+    }
+
+    function addChatItem(chatItem) {
+      chatComments.push(chatItem);
+      reloadChatList();
+    }
+
 
     function detachVideo(id) {
       if (id) {
@@ -38,9 +55,9 @@
 
     function resizeRemoteVideo() {
       console.log("--resize--");
-      var top_margin = 40;
+      var top_margin = 240;
       var left_margin = 20;
-      var video_margin = 10;
+      var video_margin = 50;
 
       var new_width = window.innerWidth - left_margin - video_margin;
       var new_height = window.innerHeight - top_margin - video_margin;
@@ -80,6 +97,8 @@
 
     // socket: accept connection request
     function onMessage(evt) {
+      console.log(evt);
+
       var id = evt.from;
       var target = evt.sendto;
       var conn = getConnection(id);
@@ -118,6 +137,11 @@
 
         case "talk_request":
           console.log("got talk request, which is for speaker.");
+
+        case "chat":
+          console.log("chat", evt);
+          addChatItem(`[${evt.role}] ${evt.chatItem}`);
+          break;
 
         default:
           console.error("invalid message type: " + evt.type);
@@ -224,7 +248,8 @@
         function () {
           console.log("Create Answer failed");
         },
-        mediaConstraints
+        // media constraints
+        { mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true } }
       );
     }
 
@@ -246,6 +271,15 @@
       socket.emit("message", { type: "end_view" });
       detachVideo(null);
       stopAllConnections();
+    }
+
+    function sendChat() {
+      const newItem = document.getElementById("textInput").value;
+      if (newItem.trim() !== "") {
+        socket.emit("message", { type: "chat", chatItem: newItem, role: "viewer" });
+        document.getElementById("textInput").value = "";
+      }
+      addChatItem("[me] " + newItem);
     }
   </script>
 </body>

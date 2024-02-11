@@ -85,6 +85,7 @@ io.on('connection', function (socket) {
     }
 
     // Broadcast in the room
+    console.log('===== Message broadcast', message)
     emitMessage('message', message)
   })
 
