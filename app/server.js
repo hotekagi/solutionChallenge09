@@ -6,27 +6,22 @@ const BROADCAST_ID = "_broadcast_";
 
 const app = express();
 const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
-});
-
+const io = new Server(server);
 const port = 9001;
 
-// Serve index.html for root path
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/watch.html");
+  res.sendFile(__dirname + "/view.html");
 });
-
-// Serve talk.html for /talk path
 app.get("/talk", (req, res) => {
   res.sendFile(__dirname + "/talk.html");
 });
+app.use("/socket.io", express.static("node_modules/socket.io/dist"));
+app.use("/src", express.static("src"));
 
 server.listen(port, () => {
-  console.log("Signaling server started on port: " + port);
+  console.log("Signaling server started on http://localhost:" + port);
+  console.log("view at http://localhost:" + port);
+  console.log("talk at http://localhost:" + port + "/talk");
 });
 
 // This callback function is called every time a socket

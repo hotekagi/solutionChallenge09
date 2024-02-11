@@ -4,23 +4,17 @@ WebRTCによる配信
 
 ## 使い方
 
-おそらくsocket.ioのv4以降があれば大抵動く。
-```
+おそらくバージョンは合わせなくても大抵動く。
+```shell
 $ node -v
 v16.10.0
 $ npm -v
 7.24.0
 
-{
-  "dependencies": {
-    "socket.io": "^4.7.4"
-  }
-}
-```
-
-- シグナリングサーバを起動
-```
-node node signaling.js
+# install dependencies
+$ npm install
+# start server
+$ npm start
 ```
 
 watch
@@ -36,4 +30,4 @@ talk
 その他
 - talk1人に対してwatchは複数OK
 - URLの末尾に`?room=[文字列]`を入れると個別ルームを立てられる
-- localhost以外、他の端末と共有する際にはngrokでサーバを立て、2つのhtml内でsocketを`var socket = io.connect("[httpsから始まるURL]");`に変更、PC以外での動作は未確認
+- localhost以外、他の端末と共有する際にはngrokでサーバを立て、2つのhtml内でsocketを`var socket = io.connect("[httpsから始まるURL]");`に変更、Chrome(MacOS)以外での動作は未確認
