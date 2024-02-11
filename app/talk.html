@@ -7,12 +7,30 @@
   <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
   <script src="socket.io/socket.io.js"></script>
   <script src="src/multi_connections.js"></script>
+  <style>
+    #recordingStatus {
+      color: green;
+      /* 録画なしの状態の文字色 */
+      font-weight: normal;
+      /* 太字を解除 */
+    }
+
+    #recordingStatus.recording {
+      color: red;
+      /* 録画中の状態の文字色 */
+      font-weight: bold;
+      /* 太字にする */
+    }
+  </style>
 </head>
 
 <body>
   <button type="button" onclick="startVideo();">Start video</button>
   <button type="button" onclick="startScreen();">Start screen</button>
   <button type="button" onclick="stopStream();">Stop stream</button>
+  <button type="button" onclick="startRecording();">Start recording</button>
+  <button type="button" onclick="stopRecording();">Stop and Upload recording</button>
+  <p id="recordingStatus">録画なし</p>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <button type="button" onclick="tellReady();">On Air</button>
   <br />
@@ -22,9 +40,9 @@
   <script>
     var localVideo = document.getElementById("local-video");
     var localStream = null;
-    var mediaConstraints = {
-      mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false },
-    };
+    var mediaRecorder = null;
+    var isRecording = false;
+    var chunks = [];
 
     function isLocalStreamStarted() {
       if (localStream) {
@@ -34,8 +52,62 @@
       }
     }
 
-    // ---- socket ------
-    // create socket
+    function updateRecordingStatus(_isRecording) {
+      var recordingStatusElement = document.getElementById('recordingStatus');
+      recordingStatusElement.textContent = _isRecording ? '録画中' : '録画なし';
+      recordingStatusElement.classList.toggle('recording', _isRecording);
+      isRecording = _isRecording;
+    }
+
+    function startRecording() {
+      if (localStream) {
+        console.log('録画を開始します。');
+        updateRecordingStatus(true);
+        mediaRecorder = new MediaRecorder(localStream);
+
+        mediaRecorder.ondataavailable = function (event) {
+          if (event.data.size > 0) {
+            chunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = function () {
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          const timestamp = new Date().toISOString();
+          const formData = new FormData();
+          formData.append('file', blob, 'recorded-video-' + timestamp + '.webm');
+
+          fetch('/upload', {
+            method: 'POST',
+            body: formData,
+          })
+            .then(response => response.json())
+            .then(data => {
+              console.log('動画がアップロードされました:', data);
+            })
+            .catch(error => {
+              console.error('動画のアップロード中にエラーが発生しました:', error);
+            });
+
+          chunks = [];
+        };
+
+        mediaRecorder.start();
+      } else {
+        console.error('録画を開始する前にビデオストリームを取得してください。');
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        updateRecordingStatus(false);
+      } else {
+        console.warn('録画が既に停止しています。');
+      }
+    }
+
+    // ---------------------- socket ----------------------
     var socketReady = false;
     // var port = 9001;
     // var socket = io.connect("http://localhost:" + port + "/");
@@ -106,78 +178,7 @@
       }
     }
 
-    // ---------------------- video handling -----------------------
-    // start local video
-    function startVideo() {
-      stopStream();
-
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then(function (stream) {
-          // success
-          localStream = stream;
-          localVideo.srcObject = stream;
-          localVideo.play();
-          localVideo.volume = 0;
-
-          // auto start
-          tellReady();
-        })
-        .catch(function (error) {
-          // error
-          console.error("An error occurred:");
-          console.error(error);
-        });
-    }
-
-    // start local screen sharing with microphone
-    function startScreen() {
-      stopStream();
-
-      navigator.mediaDevices
-        .getUserMedia({ video: false, audio: true })
-        .then(function (micStream) {
-          navigator.mediaDevices
-            .getDisplayMedia({ video: true })
-            .then(function (screenStream) {
-              // Combine video and audio streams
-              const combinedStream = new MediaStream([
-                ...screenStream.getVideoTracks(),
-                ...micStream.getAudioTracks(),
-              ]);
-
-              // success
-              localStream = combinedStream;
-              localVideo.srcObject = combinedStream;
-              localVideo.play();
-              localVideo.volume = 0;
-
-              // auto start
-              tellReady();
-            })
-            .catch(function (error) {
-              // error
-              console.error("An error occurred during screen sharing:");
-              console.error(error);
-            });
-        })
-        .catch(function (error) {
-          // error
-          console.error("An error occurred while getting microphone stream:");
-          console.error(error);
-        });
-    }
-
-    // stop local video or screen
-    function stopStream() {
-      hangUp();
-
-      localVideo.src = "";
-      // localStream.stop();
-      localStream = null;
-    }
-
-    // ---------------------- connection handling -----------------------
+    // ---------------------- connection handling ----------------------
     function prepareNewConnection(id) {
       var pc_config = { iceServers: [] };
       var peer = null;
@@ -240,7 +241,8 @@
         function () {
           console.log("Create Offer failed");
         },
-        mediaConstraints
+        // media constraints
+        { mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false } }
       );
     }
 
@@ -256,7 +258,7 @@
       );
     }
 
-    // -------- handling user UI event -----
+    // ---------------------- handling user UI event ----------------------
     function tellReady() {
       if (!isLocalStreamStarted()) {
         alert("Local stream not running yet. Please [Start Video].");
@@ -279,6 +281,83 @@
       console.log("Hang up.");
       socket.emit("message", { type: "end_talk" });
       stopAllConnections();
+    }
+
+    // ---------------------- video handling ----------------------
+    function startVideo() {
+      stopStream();
+
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then(function (stream) {
+          // success
+          localStream = stream;
+          localVideo.srcObject = stream;
+          localVideo.play();
+          localVideo.volume = 0;
+
+          // auto start
+          tellReady();
+        })
+        .catch(function (error) {
+          console.error("An error occurred:");
+          console.error(error);
+        });
+    }
+
+    // start local screen sharing with microphone
+    function startScreen() {
+      stopStream();
+
+      navigator.mediaDevices
+        .getUserMedia({ video: false, audio: true })
+        .then(function (micStream) {
+          navigator.mediaDevices
+            .getDisplayMedia({ video: true })
+            .then(function (screenStream) {
+              // Combine video and audio streams
+              const combinedStream = new MediaStream([
+                ...screenStream.getVideoTracks(),
+                ...micStream.getAudioTracks(),
+              ]);
+
+              // success
+              localStream = combinedStream;
+              localVideo.srcObject = combinedStream;
+              localVideo.play();
+              localVideo.volume = 0;
+
+              // auto start
+              tellReady();
+            })
+            .catch(function (error) {
+              // error
+              console.error("An error occurred during screen sharing:");
+              console.error(error);
+            });
+        })
+        .catch(function (error) {
+          // error
+          console.error("An error occurred while getting microphone stream:");
+          console.error(error);
+        });
+    }
+
+    // stop local video or screen
+    function stopStream() {
+      hangUp();
+
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+        localStream = null;
+      }
+
+      localVideo.src = "";
+      console.log("stop video.");
+
+      if (isRecording) {
+        stopRecording();
+      }
     }
   </script>
 </body>
