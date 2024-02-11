@@ -1,287 +1,286 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Broadcast Talk</title>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
-    <script src="socket.io/socket.io.js"></script>
-    <script src="src/multi_connections.js"></script>
-  </head>
-  <body>
-    <button type="button" onclick="startVideo();">Start video</button>
-    <button type="button" onclick="startScreen();">Start screen</button>
-    <button type="button" onclick="stopStream();">Stop stream</button>
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <button type="button" onclick="tellReady();">On Air</button>
-    <br />
-    <div style="position: relative">
-      <video
-        id="local-video"
-        autoplay
-        style="width: 240px; height: 180px; border: 1px solid black"
-      ></video>
-    </div>
-    <script>
-      var localVideo = document.getElementById("local-video");
-      var localStream = null;
-      var mediaConstraints = {
-        mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false },
+
+<head>
+  <title>Broadcast Talk</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
+  <script src="socket.io/socket.io.js"></script>
+  <script src="src/multi_connections.js"></script>
+</head>
+
+<body>
+  <button type="button" onclick="startVideo();">Start video</button>
+  <button type="button" onclick="startScreen();">Start screen</button>
+  <button type="button" onclick="stopStream();">Stop stream</button>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <button type="button" onclick="tellReady();">On Air</button>
+  <br />
+  <div style="position: relative">
+    <video id="local-video" autoplay style="width: 240px; height: 180px; border: 1px solid black"></video>
+  </div>
+  <script>
+    var localVideo = document.getElementById("local-video");
+    var localStream = null;
+    var mediaConstraints = {
+      mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false },
+    };
+
+    function isLocalStreamStarted() {
+      if (localStream) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    // ---- socket ------
+    // create socket
+    var socketReady = false;
+    // var port = 9001;
+    // var socket = io.connect("http://localhost:" + port + "/");
+    var socket = io.connect();
+    socket
+      .on("connect", onOpened)
+      .on("message", onMessage)
+      .on("user disconnected", onUserDisconnect);
+
+    function onOpened(evt) {
+      console.log("socket opened.");
+      socketReady = true;
+
+      var roomname = getRoomName();
+      socket.emit("enter", roomname);
+      console.log("enter to " + roomname);
+    }
+
+    // socket: accept connection request
+    function onMessage(evt) {
+      var id = evt.from;
+      var target = evt.sendto;
+      var conn = getConnection(id);
+
+      switch (evt.type) {
+        case "talk_request":
+          if (!isLocalStreamStarted()) {
+            console.warn("local stream not started. ignore request");
+            break;
+          }
+
+          console.log("receive request, start offer.");
+          sendOffer(id);
+          break;
+
+        case "answer":
+          if (isPeerStarted()) {
+            console.log("Received answer, settinng answer SDP");
+            console.log("Received Answer...");
+            console.log(evt);
+            setAnswer(evt);
+          }
+          break;
+
+        case "candidate":
+          if (isPeerStarted()) {
+            console.log("Received ICE candidate...");
+            onCandidate(evt);
+          }
+          break;
+
+        case "end_view":
+          console.log("got viewer bye.");
+          detachVideo(id);
+          stopConnection(id);
+          break;
+
+        default:
+          console.error("invalid message type: " + evt.type);
+          break;
+      }
+    }
+
+    function onUserDisconnect(evt) {
+      console.log("disconnected");
+      if (evt) {
+        stopConnection(evt.id);
+      }
+    }
+
+    // ---------------------- video handling -----------------------
+    // start local video
+    function startVideo() {
+      stopStream();
+
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then(function (stream) {
+          // success
+          localStream = stream;
+          localVideo.srcObject = stream;
+          localVideo.play();
+          localVideo.volume = 0;
+
+          // auto start
+          tellReady();
+        })
+        .catch(function (error) {
+          // error
+          console.error("An error occurred:");
+          console.error(error);
+        });
+    }
+
+    // start local screen sharing with microphone
+    function startScreen() {
+      stopStream();
+
+      navigator.mediaDevices
+        .getUserMedia({ video: false, audio: true })
+        .then(function (micStream) {
+          navigator.mediaDevices
+            .getDisplayMedia({ video: true })
+            .then(function (screenStream) {
+              // Combine video and audio streams
+              const combinedStream = new MediaStream([
+                ...screenStream.getVideoTracks(),
+                ...micStream.getAudioTracks(),
+              ]);
+
+              // success
+              localStream = combinedStream;
+              localVideo.srcObject = combinedStream;
+              localVideo.play();
+              localVideo.volume = 0;
+
+              // auto start
+              tellReady();
+            })
+            .catch(function (error) {
+              // error
+              console.error("An error occurred during screen sharing:");
+              console.error(error);
+            });
+        })
+        .catch(function (error) {
+          // error
+          console.error("An error occurred while getting microphone stream:");
+          console.error(error);
+        });
+    }
+
+    // stop local video or screen
+    function stopStream() {
+      hangUp();
+
+      localVideo.src = "";
+      // localStream.stop();
+      localStream = null;
+    }
+
+    // ---------------------- connection handling -----------------------
+    function prepareNewConnection(id) {
+      var pc_config = { iceServers: [] };
+      var peer = null;
+      try {
+        peer = new webkitRTCPeerConnection(pc_config);
+      } catch (e) {
+        console.log(
+          "Failed to create PeerConnection, exception: " + e.message
+        );
+      }
+      var conn = new Connection();
+      conn.id = id;
+      conn.peerconnection = peer;
+      peer.id = id;
+      addConnection(id, conn);
+
+      // send any ice candidates to the other peer
+      peer.onicecandidate = function (evt) {
+        if (evt.candidate) {
+          console.log(evt.candidate);
+          var candidate = {
+            type: "candidate",
+            sendto: conn.id,
+            sdpMLineIndex: evt.candidate.sdpMLineIndex,
+            sdpMid: evt.candidate.sdpMid,
+            candidate: evt.candidate.candidate,
+          };
+          var text = JSON.stringify(candidate);
+          console.log("---sending candidate text ---");
+          console.log(text);
+          socket.emit("message", candidate);
+        } else {
+          console.log("ICE event. phase=" + evt.eventPhase);
+        }
       };
 
-      function isLocalStreamStarted() {
-        if (localStream) {
-          return true;
-        } else {
-          return false;
-        }
+      console.log("Adding local stream...");
+      peer.addStream(localStream);
+
+      return conn;
+    }
+
+    function sendOffer(id) {
+      var conn = getConnection(id);
+      if (!conn) {
+        conn = prepareNewConnection(id);
       }
 
-      // ---- socket ------
-      // create socket
-      var socketReady = false;
-      // var port = 9001;
-      // var socket = io.connect("http://localhost:" + port + "/");
-      var socket = io.connect();
-      socket
-        .on("connect", onOpened)
-        .on("message", onMessage)
-        .on("user disconnected", onUserDisconnect);
+      conn.peerconnection.createOffer(
+        // in case of success
+        function (sessionDescription) {
+          conn.peerconnection.setLocalDescription(sessionDescription);
+          sessionDescription.sendto = id;
+          var text = JSON.stringify(sessionDescription);
+          console.log("---sending offer text ---");
+          console.log(text);
+          socket.emit("message", sessionDescription);
+        },
+        // in case of error
+        function () {
+          console.log("Create Offer failed");
+        },
+        mediaConstraints
+      );
+    }
 
-      function onOpened(evt) {
-        console.log("socket opened.");
-        socketReady = true;
-
-        var roomname = getRoomName();
-        socket.emit("enter", roomname);
-        console.log("enter to " + roomname);
+    function setAnswer(evt) {
+      var id = evt.from;
+      var conn = getConnection(id);
+      if (!conn) {
+        console.error("peerConnection not exist!");
+        return;
       }
+      conn.peerconnection.setRemoteDescription(
+        new RTCSessionDescription(evt)
+      );
+    }
 
-      // socket: accept connection request
-      function onMessage(evt) {
-        var id = evt.from;
-        var target = evt.sendto;
-        var conn = getConnection(id);
-
-        switch (evt.type) {
-          case "talk_request":
-            if (!isLocalStreamStarted()) {
-              console.warn("local stream not started. ignore request");
-              break;
-            }
-
-            console.log("receive request, start offer.");
-            sendOffer(id);
-            break;
-
-          case "answer":
-            if (isPeerStarted()) {
-              console.log("Received answer, settinng answer SDP");
-              console.log("Received Answer...");
-              console.log(evt);
-              setAnswer(evt);
-            }
-            break;
-
-          case "candidate":
-            if (isPeerStarted()) {
-              console.log("Received ICE candidate...");
-              onCandidate(evt);
-            }
-            break;
-
-          case "end_view":
-            console.log("got viewer bye.");
-            detachVideo(id);
-            stopConnection(id);
-            break;
-
-          default:
-            console.error("invalid message type: " + evt.type);
-            break;
-        }
+    // -------- handling user UI event -----
+    function tellReady() {
+      if (!isLocalStreamStarted()) {
+        alert("Local stream not running yet. Please [Start Video].");
+        return;
       }
-
-      function onUserDisconnect(evt) {
-        console.log("disconnected");
-        if (evt) {
-          stopConnection(evt.id);
-        }
-      }
-
-      // ---------------------- video handling -----------------------
-      // start local video
-      function startVideo() {
-        stopStream();
-
-        navigator.mediaDevices
-          .getUserMedia({ video: true, audio: true })
-          .then(function (stream) {
-            // success
-            localStream = stream;
-            localVideo.srcObject = stream;
-            localVideo.play();
-            localVideo.volume = 0;
-
-            // auto start
-            tellReady();
-          })
-          .catch(function (error) {
-            // error
-            console.error("An error occurred:");
-            console.error(error);
-          });
-      }
-
-      // start local screen sharing with microphone
-      function startScreen() {
-        stopStream();
-
-        navigator.mediaDevices
-          .getUserMedia({ video: false, audio: true })
-          .then(function (micStream) {
-            navigator.mediaDevices
-              .getDisplayMedia({ video: true })
-              .then(function (screenStream) {
-                // Combine video and audio streams
-                const combinedStream = new MediaStream([
-                  ...screenStream.getVideoTracks(),
-                  ...micStream.getAudioTracks(),
-                ]);
-
-                // success
-                localStream = combinedStream;
-                localVideo.srcObject = combinedStream;
-                localVideo.play();
-                localVideo.volume = 0;
-
-                // auto start
-                tellReady();
-              })
-              .catch(function (error) {
-                // error
-                console.error("An error occurred during screen sharing:");
-                console.error(error);
-              });
-          })
-          .catch(function (error) {
-            // error
-            console.error("An error occurred while getting microphone stream:");
-            console.error(error);
-          });
-      }
-
-      // stop local video or screen
-      function stopStream() {
-        hangUp();
-
-        localVideo.src = "";
-        // localStream.stop();
-        localStream = null;
-      }
-
-      // ---------------------- connection handling -----------------------
-      function prepareNewConnection(id) {
-        var pc_config = { iceServers: [] };
-        var peer = null;
-        try {
-          peer = new webkitRTCPeerConnection(pc_config);
-        } catch (e) {
-          console.log(
-            "Failed to create PeerConnection, exception: " + e.message
-          );
-        }
-        var conn = new Connection();
-        conn.id = id;
-        conn.peerconnection = peer;
-        peer.id = id;
-        addConnection(id, conn);
-
-        // send any ice candidates to the other peer
-        peer.onicecandidate = function (evt) {
-          if (evt.candidate) {
-            console.log(evt.candidate);
-            var candidate = {
-              type: "candidate",
-              sendto: conn.id,
-              sdpMLineIndex: evt.candidate.sdpMLineIndex,
-              sdpMid: evt.candidate.sdpMid,
-              candidate: evt.candidate.candidate,
-            };
-            var text = JSON.stringify(candidate);
-            console.log("---sending candidate text ---");
-            console.log(text);
-            socket.emit("message", candidate);
-          } else {
-            console.log("ICE event. phase=" + evt.eventPhase);
-          }
-        };
-
-        console.log("Adding local stream...");
-        peer.addStream(localStream);
-
-        return conn;
-      }
-
-      function sendOffer(id) {
-        var conn = getConnection(id);
-        if (!conn) {
-          conn = prepareNewConnection(id);
-        }
-
-        conn.peerconnection.createOffer(
-           // in case of success
-          function (sessionDescription) {
-            conn.peerconnection.setLocalDescription(sessionDescription);
-            sessionDescription.sendto = id;
-            var text = JSON.stringify(sessionDescription);
-            console.log("---sending offer text ---");
-            console.log(text);
-            socket.emit("message", sessionDescription);
-          },
-           // in case of error
-          function () {
-            console.log("Create Offer failed");
-          },
-          mediaConstraints
+      if (!socketReady) {
+        alert(
+          "Socket is not connected to server. Please reload and try again."
         );
+        return;
       }
 
-      function setAnswer(evt) {
-        var id = evt.from;
-        var conn = getConnection(id);
-        if (!conn) {
-          console.error("peerConnection not exist!");
-          return;
-        }
-        conn.peerconnection.setRemoteDescription(
-          new RTCSessionDescription(evt)
-        );
-      }
+      // call others, in same room
+      console.log("tell ready to others in same room, befeore offer");
+      socket.emit("message", { type: "talk_ready" });
+    }
 
-      // -------- handling user UI event -----
-      function tellReady() {
-        if (!isLocalStreamStarted()) {
-          alert("Local stream not running yet. Please [Start Video].");
-          return;
-        }
-        if (!socketReady) {
-          alert(
-            "Socket is not connected to server. Please reload and try again."
-          );
-          return;
-        }
+    // stop the connection upon user request
+    function hangUp() {
+      console.log("Hang up.");
+      socket.emit("message", { type: "end_talk" });
+      stopAllConnections();
+    }
+  </script>
+</body>
 
-        // call others, in same room
-        console.log("tell ready to others in same room, befeore offer");
-        socket.emit("message", { type: "talk_ready" });
-      }
-
-      // stop the connection upon user request
-      function hangUp() {
-        console.log("Hang up.");
-        socket.emit("message", { type: "end_talk" });
-        stopAllConnections();
-      }
-    </script>
-  </body>
 </html>

@@ -1,1 +1,3 @@
 node_modules
+uploads/*.webm
+!uploads/.gitkeep
