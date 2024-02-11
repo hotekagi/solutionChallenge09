@@ -5,6 +5,7 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
     <script src="socket.io/socket.io.js"></script>
+    <script src="src/multi_connections.js"></script>
   </head>
   <body>
     <button type="button" onclick="startVideo();">Start video</button>
@@ -35,95 +36,12 @@
         }
       }
 
-      // -------------- multi connections --------------------
-      var MAX_CONNECTION_COUNT = 10;
-      var connections = {}; // Connection hash
-      function Connection() {
-        // Connection Class
-        var self = this;
-        var id = ""; // socket.id of partner
-        var peerconnection = null; // RTCPeerConnection instance
-      }
-
-      function getConnection(id) {
-        var con = null;
-        con = connections[id];
-        return con;
-      }
-
-      function addConnection(id, connection) {
-        connections[id] = connection;
-      }
-
-      function getConnectionCount() {
-        var count = 0;
-        for (var id in connections) {
-          count++;
-        }
-
-        console.log("getConnectionCount=" + count);
-        return count;
-      }
-
-      function isConnectPossible() {
-        if (getConnectionCount() < MAX_CONNECTION_COUNT) return true;
-        else return false;
-      }
-
-      function getConnectionIndex(id_to_lookup) {
-        var index = 0;
-        for (var id in connections) {
-          if (id == id_to_lookup) {
-            return index;
-          }
-
-          index++;
-        }
-
-        // not found
-        return -1;
-      }
-
-      function deleteConnection(id) {
-        delete connections[id];
-      }
-
-      function stopAllConnections() {
-        for (var id in connections) {
-          var conn = connections[id];
-          conn.peerconnection.close();
-          conn.peerconnection = null;
-          delete connections[id];
-        }
-      }
-
-      function stopConnection(id) {
-        var conn = connections[id];
-        if (conn) {
-          console.log("stop and delete connection with id=" + id);
-          conn.peerconnection.close();
-          conn.peerconnection = null;
-          delete connections[id];
-        } else {
-          console.log("try to stop connection, but not found id=" + id);
-        }
-      }
-
-      function isPeerStarted() {
-        if (getConnectionCount() > 0) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-
       // ---- socket ------
       // create socket
       var socketReady = false;
-      var port = 9001;
-      var socket = io.connect("http://localhost:" + port + "/");
-
-      // socket: channel connected
+      // var port = 9001;
+      // var socket = io.connect("http://localhost:" + port + "/");
+      var socket = io.connect();
       socket
         .on("connect", onOpened)
         .on("message", onMessage)
@@ -133,7 +51,7 @@
         console.log("socket opened.");
         socketReady = true;
 
-        var roomname = getRoomName(); // 会議室名を取得する
+        var roomname = getRoomName();
         socket.emit("enter", roomname);
         console.log("enter to " + roomname);
       }
@@ -144,24 +62,42 @@
         var target = evt.sendto;
         var conn = getConnection(id);
 
-        if (evt.type === "talk_request") {
-          if (!isLocalStreamStarted()) {
-            console.warn("local stream not started. ignore request");
-            return;
-          }
+        switch (evt.type) {
+          case "talk_request":
+            if (!isLocalStreamStarted()) {
+              console.warn("local stream not started. ignore request");
+              break;
+            }
 
-          console.log("receive request, start offer.");
-          sendOffer(id);
-          return;
-        } else if (evt.type === "answer" && isPeerStarted()) {
-          console.log("Received answer, settinng answer SDP");
-          onAnswer(evt);
-        } else if (evt.type === "candidate" && isPeerStarted()) {
-          console.log("Received ICE candidate...");
-          onCandidate(evt);
-        } else if (evt.type === "bye") {
-          console.log("got bye.");
-          stopConnection(id);
+            console.log("receive request, start offer.");
+            sendOffer(id);
+            break;
+
+          case "answer":
+            if (isPeerStarted()) {
+              console.log("Received answer, settinng answer SDP");
+              console.log("Received Answer...");
+              console.log(evt);
+              setAnswer(evt);
+            }
+            break;
+
+          case "candidate":
+            if (isPeerStarted()) {
+              console.log("Received ICE candidate...");
+              onCandidate(evt);
+            }
+            break;
+
+          case "end_view":
+            console.log("got viewer bye.");
+            detachVideo(id);
+            stopConnection(id);
+            break;
+
+          default:
+            console.error("invalid message type: " + evt.type);
+            break;
         }
       }
 
@@ -170,61 +106,6 @@
         if (evt) {
           stopConnection(evt.id);
         }
-      }
-
-      function getRoomName() {
-        // たとえば、 URLに  ?roomname  とする
-        var url = document.location.href;
-        var args = url.split("?");
-        if (args.length > 1) {
-          var room = args[1];
-          if (room != "") {
-            return room;
-          }
-        }
-        return "_defaultroom";
-      }
-
-      function onAnswer(evt) {
-        console.log("Received Answer...");
-        console.log(evt);
-        setAnswer(evt);
-      }
-
-      function onCandidate(evt) {
-        var id = evt.from;
-        var conn = getConnection(id);
-        if (!conn) {
-          console.error("peerConnection not exist!");
-          return;
-        }
-
-        var candidate = new RTCIceCandidate({
-          sdpMLineIndex: evt.sdpMLineIndex,
-          sdpMid: evt.sdpMid,
-          candidate: evt.candidate,
-        });
-        console.log("Received Candidate...");
-        console.log(candidate);
-        conn.peerconnection.addIceCandidate(candidate);
-      }
-
-      function sendSDP(sdp) {
-        var text = JSON.stringify(sdp);
-        console.log("---sending sdp text ---");
-        console.log(text);
-
-        // send via socket
-        socket.emit("message", sdp);
-      }
-
-      function sendCandidate(candidate) {
-        var text = JSON.stringify(candidate);
-        console.log("---sending candidate text ---");
-        console.log(text);
-
-        // send via socket
-        socket.emit("message", candidate);
       }
 
       // ---------------------- video handling -----------------------
@@ -294,7 +175,6 @@
         hangUp();
 
         localVideo.src = "";
-
         // localStream.stop();
         localStream = null;
       }
@@ -320,16 +200,19 @@
         peer.onicecandidate = function (evt) {
           if (evt.candidate) {
             console.log(evt.candidate);
-            sendCandidate({
+            var candidate = {
               type: "candidate",
               sendto: conn.id,
               sdpMLineIndex: evt.candidate.sdpMLineIndex,
               sdpMid: evt.candidate.sdpMid,
               candidate: evt.candidate.candidate,
-            });
+            };
+            var text = JSON.stringify(candidate);
+            console.log("---sending candidate text ---");
+            console.log(text);
+            socket.emit("message", candidate);
           } else {
             console.log("ICE event. phase=" + evt.eventPhase);
-            //conn.established = true;
           }
         };
 
@@ -346,14 +229,17 @@
         }
 
         conn.peerconnection.createOffer(
+           // in case of success
           function (sessionDescription) {
-            // in case of success
             conn.peerconnection.setLocalDescription(sessionDescription);
             sessionDescription.sendto = id;
-            sendSDP(sessionDescription);
+            var text = JSON.stringify(sessionDescription);
+            console.log("---sending offer text ---");
+            console.log(text);
+            socket.emit("message", sessionDescription);
           },
+           // in case of error
           function () {
-            // in case of error
             console.log("Create Offer failed");
           },
           mediaConstraints

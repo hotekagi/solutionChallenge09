@@ -24,8 +24,6 @@ server.listen(port, () => {
   console.log("talk at http://localhost:" + port + "/talk");
 });
 
-// This callback function is called every time a socket
-// tries to connect to the server
 io.on("connection", function (socket) {
   // ---- Multi-room ----
   socket.on("enter", function (roomname) {
