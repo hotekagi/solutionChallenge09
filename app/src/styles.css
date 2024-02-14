@@ -140,6 +140,7 @@ body {
 
 .chapter-header {
   margin: 10px;
+  margin-left: 30px;
   color: #ffffff;
   display: inline-block;
 }

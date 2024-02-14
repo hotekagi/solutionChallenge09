@@ -10,13 +10,16 @@
   <script src="src/multi_connections.js"></script>
   <style>
     #recordingStatus {
-      color: aliceblue;
+      color: red;
+      font-weight: bold;
       display: inline-block;
       margin: 10px;
     }
 
     #recordingStatus.recording {
       color: aliceblue;
+      font-weight: normal;
+      display: inline-block;
       margin: 10px;
     }
 
@@ -121,7 +124,7 @@
       }
     }
 
-    var chapterList = [];
+    var chapterList = ["Chapter1", "Chapter2", "Chapter3"];
     var currentChapter = "";
     var chapterSelect = document.getElementById("chapterSelect");
     function reloadChapterList() {
@@ -132,6 +135,8 @@
         option.textContent = chapter;
         chapterSelect.appendChild(option);
       });
+      const chapterEdit = document.getElementById("chapterEdit");
+      chapterEdit.value = chapterList.join('\n');
     }
     reloadChapterList();
     function changeChapter(select) {
@@ -172,6 +177,11 @@
 
     function startRecording(e) {
       e.preventDefault();
+
+      if (isRecording) {
+        console.warn('録画が既に開始されています。');
+        return;
+      }
 
       if (localStream) {
         console.log('録画を開始します。');
@@ -481,6 +491,11 @@
           navigator.mediaDevices
             .getDisplayMedia({ video: true })
             .then(function (screenStream) {
+              const videoTrack = screenStream.getVideoTracks()[0];
+              videoTrack.onended = function () {
+                stopStream(e);
+              };
+
               // Combine video and audio streams
               const combinedStream = new MediaStream([
                 ...screenStream.getVideoTracks(),
