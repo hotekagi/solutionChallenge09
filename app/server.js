@@ -3,6 +3,7 @@ const http = require('http')
 const { Server } = require('socket.io')
 const multer = require('multer')
 const path = require('path')
+const fs = require('fs')
 
 const BROADCAST_ID = '_broadcast_'
 
@@ -32,8 +33,21 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage: storage })
 app.post('/upload', upload.single('file'), (req, res) => {
-  console.log('動画がアップロードされました:', req.file.filename)
-  res.json({ success: true, filename: req.file.filename })
+  console.log('動画がアップロードされました:', req.file.originalname)
+
+  fs.rename(
+    req.file.path,
+    path.join(path.dirname(req.file.path), req.file.originalname),
+    function (err) {
+      if (err) {
+        console.log('Failed to rename file:', err)
+        res.json({ success: false, message: 'Failed to rename file.' })
+      } else {
+        console.log('File has been saved:', req.file.originalname)
+        res.json({ success: true, filename: req.file.originalname })
+      }
+    }
+  )
 })
 
 server.listen(port, () => {

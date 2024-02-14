@@ -5,49 +5,94 @@
   <title>Broadcast Talk</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
+  <link rel="stylesheet" href="src/styles.css">
   <script src="socket.io/socket.io.js"></script>
   <script src="src/multi_connections.js"></script>
   <style>
     #recordingStatus {
-      color: green;
-      /* 録画なしの状態の文字色 */
-      font-weight: normal;
-      /* 太字を解除 */
+      color: aliceblue;
+      display: inline-block;
+      margin: 10px;
     }
 
     #recordingStatus.recording {
-      color: red;
-      /* 録画中の状態の文字色 */
-      font-weight: bold;
-      /* 太字にする */
+      color: aliceblue;
+      margin: 10px;
+    }
+
+    #chapterEdit {
+      margin: 10px;
+      width: 720px;
+      height: 100px;
+      background-color: #2D2D2D;
+      color: #fff;
     }
   </style>
 </head>
 
 <body>
-  <button type="button" onclick="startVideo();">Start video</button>
-  <button type="button" onclick="startScreen();">Start screen</button>
-  <button type="button" onclick="stopStream();">Stop stream</button>
-  <button type="button" onclick="startRecording();">Start recording</button>
-  <button type="button" onclick="stopRecording();">Stop and Upload recording</button>
-  <p id="recordingStatus">録画なし</p>
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <button type="button" onclick="tellReady();">On Air</button>
-  <br />
-  <ul id="chatList"></ul>
-  <input type="text" id="textInput" placeholder="新しいコメントを入力" />
-  <button onclick="sendChat()">チャットを送信</button>
-  <br />
-  <div style="position: relative">
-    <video id="local-video" autoplay style="width: 240px; height: 180px; border: 1px solid black"></video>
+  <div class="btn-container">
+    <div class='btn-green' onclick="startVideo(event);">
+      <a href=''>Enable Video</a>
+    </div>
   </div>
-  <script>
-    var localVideo = document.getElementById("local-video");
-    var localStream = null;
-    var mediaRecorder = null;
-    var isRecording = false;
-    var chunks = [];
+  <div class="btn-container">
+    <div class='btn-green' onclick="startScreen(event);">
+      <a href=''>Share Screen</a>
+    </div>
+  </div>
+  <div class="btn-container">
+    <div class='btn-blue' onclick="startRecording(event);">
+      <a href=''>Start Recording</a>
+    </div>
+  </div>
+  <div class="btn-container">
+    <div class='btn-orange' onclick="stopStream(event);">
+      <a href=''>Stop Sharing</a>
+    </div>
+  </div>
+  <!-- <button type="button" onclick="tellReady();">On Air</button> -->
+  <div class="video-and-chat-container">
+    <video id="talk-local-video" autoplay></video>
+    <div>
+      <div id="chatContainer">
+        <ul id="chatList"></ul>
+      </div>
+      <input type="textarea" id="textInput" class="text-input" placeholder="Type your message..." />
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+  <div class="chapter-header">Chapter Name</div>
+  <label class="selectbox-chapter">
+    <select id="chapterSelect" onchange="changeChapter(this)"></select>
+  </label>
+  <p id="recordingStatus">No Recording</p>
+  <br>
+  <textarea id="chapterEdit" onchange="editChapter(this)"></textarea>
 
+  <script>
+    var localVideo = document.getElementById("talk-local-video");
+    var localStream = null;
+
+    function isLocalStreamStarted() {
+      if (localStream) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    //                              
+    //           ■                  
+    //    ■■■■■  ■                  
+    //   ■■   ■  ■              ■   
+    //  ■■       ■ ■■■    ■■■  ■■■■ 
+    //  ■        ■■  ■■  ■   ■  ■   
+    //  ■        ■    ■      ■  ■   
+    //  ■        ■    ■  ■■■■■  ■   
+    //  ■■       ■    ■  ■   ■  ■   
+    //   ■■   ■  ■    ■  ■  ■■  ■■  
+    //    ■■■■   ■    ■  ■■■■■   ■■ 
+    //                              
     var chatComments = [];
 
     function reloadChatList() {
@@ -58,32 +103,80 @@
         listItem.textContent = item;
         chatList.appendChild(listItem);
       });
+      document.getElementById("chatContainer").scrollBy(0, chatList.scrollHeight);
     }
 
-    function addChatItem(chatItem) {
+    function addChatItem(chatItem) { // also called in onMessage
       chatComments.push(chatItem);
       reloadChatList();
     }
 
-    function isLocalStreamStarted() {
-      if (localStream) {
-        return true;
-      } else {
-        return false;
+    function sendChat() {
+      const newItem = document.getElementById("textInput").value;
+
+      if (newItem.trim() !== "") {
+        socket.emit("message", { type: "chat", chatItem: newItem, role: "host" });
+        addChatItem("[me] " + newItem);
+        document.getElementById("textInput").value = "";
       }
     }
 
+    var chapterList = [];
+    var currentChapter = "";
+    var chapterSelect = document.getElementById("chapterSelect");
+    function reloadChapterList() {
+      chapterSelect.innerHTML = "";
+      chapterList.forEach((chapter, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = chapter;
+        chapterSelect.appendChild(option);
+      });
+    }
+    reloadChapterList();
+    function changeChapter(select) {
+      currentChapter = chapterList[select.value];
+    }
+    function editChapter(thisElement) {
+      chapterList = thisElement.value.split('\n');
+      reloadChapterList();
+    }
+
+    //                                                              
+    //                                         ■                    
+    // ■■■■■                                   ■  ■                 
+    // ■    ■                                  ■                    
+    // ■    ■■  ■■■■   ■■■■   ■■■■   ■ ■■  ■■■■■  ■   ■ ■■■    ■■■■ 
+    // ■    ■  ■■  ■  ■■  ■  ■■  ■■  ■■   ■■  ■■  ■   ■■  ■■  ■■  ■ 
+    // ■■■■■   ■   ■■ ■      ■    ■  ■■   ■    ■  ■   ■    ■  ■   ■ 
+    // ■   ■   ■■■■■■ ■      ■    ■  ■    ■    ■  ■   ■    ■  ■■  ■ 
+    // ■    ■  ■      ■      ■    ■  ■    ■    ■  ■   ■    ■   ■■■  
+    // ■    ■■ ■■     ■■  ■  ■■  ■■  ■    ■■  ■■  ■   ■    ■  ■■    
+    // ■     ■  ■■■■   ■■■■   ■■■■   ■     ■■■ ■  ■   ■    ■   ■■■■ 
+    //                                                        ■   ■■
+    //                                                        ■■■■■ 
+    //                                                              
+    var mediaRecorder = null;
+    var isRecording = false;
+    var chunks = [];
+
+    var stopwatchInterval;
+    var seconds = 0, minutes = 0, hours = 0;
+
     function updateRecordingStatus(_isRecording) {
       var recordingStatusElement = document.getElementById('recordingStatus');
-      recordingStatusElement.textContent = _isRecording ? '録画中' : '録画なし';
+      recordingStatusElement.textContent = _isRecording ? 'Recording...' : 'No Recording';
       recordingStatusElement.classList.toggle('recording', _isRecording);
       isRecording = _isRecording;
     }
 
-    function startRecording() {
+    function startRecording(e) {
+      e.preventDefault();
+
       if (localStream) {
         console.log('録画を開始します。');
         updateRecordingStatus(true);
+        stopwatchInterval = setInterval(updateStopwatch, 1000);
         mediaRecorder = new MediaRecorder(localStream);
 
         mediaRecorder.ondataavailable = function (event) {
@@ -96,7 +189,9 @@
           const blob = new Blob(chunks, { type: 'video/webm' });
           const timestamp = new Date().toISOString();
           const formData = new FormData();
-          formData.append('file', blob, 'recorded-video-' + timestamp + '.webm');
+          const filename = `${getRoomName()}-${currentChapter}-${timestamp}.webm`;
+          formData.append('file', blob, filename);
+          formData.append("filename", filename);
 
           fetch('/upload', {
             method: 'POST',
@@ -122,16 +217,47 @@
     function stopRecording() {
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
+        clearInterval(stopwatchInterval);
+        seconds = 0;
+        minutes = 0;
+        hours = 0;
         updateRecordingStatus(false);
       } else {
         console.warn('録画が既に停止しています。');
       }
     }
 
-    // ---------------------- socket ----------------------
+    function pad(value) {
+      return value < 10 ? '0' + value : value;
+    }
+
+    function updateStopwatch() {
+      seconds++;
+      if (seconds === 60) {
+        seconds = 0;
+        minutes++;
+        if (minutes === 60) {
+          minutes = 0;
+          hours++;
+        }
+      }
+
+      const formattedTime = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+      document.getElementById('recordingStatus').textContent = "Recording... " + formattedTime;
+    }
+    //                                           
+    //                         ■                 
+    //   ■■■■                  ■                 
+    //  ■   ■■                 ■             ■   
+    //  ■        ■■■■    ■■■■  ■   ■   ■■■■ ■■■■ 
+    //  ■■■     ■■  ■■  ■■  ■  ■  ■   ■■  ■  ■   
+    //    ■■■   ■    ■  ■      ■ ■    ■   ■■ ■   
+    //      ■■  ■    ■  ■      ■■■    ■■■■■■ ■   
+    //       ■  ■    ■  ■      ■  ■   ■      ■   
+    //  ■   ■■  ■■  ■■  ■■  ■  ■  ■■  ■■     ■■  
+    //   ■■■■    ■■■■    ■■■■  ■   ■   ■■■■   ■■
+    //                                           
     var socketReady = false;
-    // var port = 9001;
-    // var socket = io.connect("http://localhost:" + port + "/");
     var socket = io.connect();
     socket
       .on("connect", onOpened)
@@ -309,9 +435,22 @@
       stopAllConnections();
     }
 
-    // ---------------------- video handling ----------------------
-    function startVideo() {
-      stopStream();
+    //                                     
+    //                    ■                
+    //  ■■     ■ ■        ■                
+    //   ■    ■■          ■                
+    //   ■    ■  ■    ■■■■■   ■■■■   ■■■■  
+    //   ■■   ■  ■   ■■  ■■  ■■  ■  ■■  ■■ 
+    //    ■  ■■  ■   ■    ■  ■   ■■ ■    ■ 
+    //    ■  ■   ■   ■    ■  ■■■■■■ ■    ■ 
+    //    ■■ ■   ■   ■    ■  ■      ■    ■ 
+    //     ■■    ■   ■■  ■■  ■■     ■■  ■■ 
+    //     ■■    ■    ■■■ ■   ■■■■   ■■■■
+    //                                     
+    function startVideo(e) {
+      e.preventDefault();
+      console.log("start video.");
+      stopStream(e);
 
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
@@ -332,8 +471,9 @@
     }
 
     // start local screen sharing with microphone
-    function startScreen() {
-      stopStream();
+    function startScreen(e) {
+      e.preventDefault();
+      stopStream(e);
 
       navigator.mediaDevices
         .getUserMedia({ video: false, audio: true })
@@ -370,7 +510,8 @@
     }
 
     // stop local video or screen
-    function stopStream() {
+    function stopStream(e) {
+      e.preventDefault();
       hangUp();
 
       if (localStream) {
@@ -384,16 +525,6 @@
       if (isRecording) {
         stopRecording();
       }
-    }
-
-    function sendChat() {
-      const newItem = document.getElementById("textInput").value;
-      if (newItem.trim() !== "") {
-        socket.emit("message", { type: "chat", chatItem: newItem, role: "host" });
-        document.getElementById("textInput").value = "";
-      }
-
-      addChatItem("[me] " + newItem);
     }
   </script>
 </body>
