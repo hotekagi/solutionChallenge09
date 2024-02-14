@@ -19,9 +19,14 @@
   <div style="position: relative">
     <video id="remote-video" autoplay style="width: 320px; height: 240px; border: 1px solid black"></video>
   </div>
+  <div style="position: relative">
+    <video id="local-video" autoplay style="width: 320px; height: 240px; border: 1px solid black"></video>
+  </div>
   <script>
+    var localVideo = document.getElementById("local-video");
     var remoteVideo = document.getElementById("remote-video");
     var chatComments = [];
+    startVideo();
 
     function reloadChatList() {
       const chatList = document.getElementById("chatList");
@@ -280,6 +285,23 @@
         document.getElementById("textInput").value = "";
       }
       addChatItem("[me] " + newItem);
+    }
+
+    // ---------------------- video handling ----------------------
+    function startVideo() {
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: false })
+        .then(function (stream) {
+          // success
+          localStream = stream;
+          localVideo.srcObject = stream;
+          localVideo.play();
+          localVideo.volume = 0;
+        })
+        .catch(function (error) {
+          console.error("An error occurred:");
+          console.error(error);
+        });
     }
   </script>
 </body>
