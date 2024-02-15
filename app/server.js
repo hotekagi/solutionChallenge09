@@ -12,8 +12,8 @@ const server = http.createServer(app)
 const io = new Server(server)
 const port = 9001
 
-app.use('/socket.io', express.static('node_modules/socket.io/dist'))
-app.use('/src', express.static('src'))
+app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/dist')));
+app.use('/src', express.static(path.join(__dirname, 'src')));
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/view.html')
