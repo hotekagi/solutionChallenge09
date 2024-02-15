@@ -21,9 +21,6 @@ app.get('/', (req, res) => {
 app.get('/talk', (req, res) => {
   res.sendFile(__dirname + '/talk.html')
 })
-app.get('/clm', (req, res) => {
-  res.sendFile(__dirname + '/clm_emotiondetection.html')
-})
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
