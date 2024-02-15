@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
   <script src="socket.io/socket.io.js"></script>
   <script src="src/multi_connections.js"></script>
+  <script src="src/clmtrackr/clmtrackr.js"></script>
 </head>
 
 <body>
@@ -22,11 +23,12 @@
   <div style="position: relative">
     <video id="local-video" autoplay style="width: 320px; height: 240px; border: 1px solid black"></video>
   </div>
+  <script src="js/clmtrackr.js"></script>
   <script>
     var localVideo = document.getElementById("local-video");
     var remoteVideo = document.getElementById("remote-video");
     var chatComments = [];
-    startVideo();
+    // startVideo();
 
     function reloadChatList() {
       const chatList = document.getElementById("chatList");
@@ -287,22 +289,22 @@
       addChatItem("[me] " + newItem);
     }
 
-    // ---------------------- video handling ----------------------
-    function startVideo() {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: false })
-        .then(function (stream) {
-          // success
-          localStream = stream;
-          localVideo.srcObject = stream;
-          localVideo.play();
-          localVideo.volume = 0;
-        })
-        .catch(function (error) {
-          console.error("An error occurred:");
-          console.error(error);
-        });
-    }
+
+    // function startVideo() {
+    //   navigator.mediaDevices
+    //     .getUserMedia({ video: true, audio: false })
+    //     .then(function (stream) {
+    //       // success
+    //       localStream = stream;
+    //       localVideo.srcObject = stream;
+    //       localVideo.play();
+    //       localVideo.volume = 0;
+    //     })
+    //     .catch(function (error) {
+    //       console.error("An error occurred:");
+    //       console.error(error);
+    //     });
+    // }
   </script>
 </body>
 
