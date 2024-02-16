@@ -14,12 +14,19 @@ const port = 9001
 
 app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/dist')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
+app.use('/clmtrackr', express.static(path.join(__dirname, 'src/clmtrackr')));
+app.use('/js', express.static(path.join(__dirname, 'src/clmtrackr/js')));
+app.use('/lib', express.static(path.join(__dirname, 'src/clmtrackr/js/lib')));
+app.use('/models', express.static(path.join(__dirname, 'src/clmtrackr/models')));
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/view.html')
 })
 app.get('/talk', (req, res) => {
   res.sendFile(__dirname + '/talk.html')
+})
+app.get('/clm', (req, res) => {
+  res.sendFile(__dirname + '/clm.html')
 })
 
 const storage = multer.diskStorage({
@@ -54,6 +61,7 @@ server.listen(port, () => {
   console.log('Signaling server started on http://localhost:' + port)
   console.log('view at http://localhost:' + port)
   console.log('talk at http://localhost:' + port + '/talk')
+  console.log('talk at http://localhost:' + port + '/clm')
 })
 
 io.on('connection', function (socket) {
