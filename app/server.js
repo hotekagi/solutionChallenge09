@@ -25,9 +25,6 @@ app.get('/', (req, res) => {
 app.get('/talk', (req, res) => {
   res.sendFile(__dirname + '/talk.html')
 })
-app.get('/clm', (req, res) => {
-  res.sendFile(__dirname + '/clm.html')
-})
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -61,7 +58,6 @@ server.listen(port, () => {
   console.log('Signaling server started on http://localhost:' + port)
   console.log('view at http://localhost:' + port)
   console.log('talk at http://localhost:' + port + '/talk')
-  console.log('talk at http://localhost:' + port + '/clm')
 })
 
 io.on('connection', function (socket) {
