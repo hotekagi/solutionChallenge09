@@ -7,12 +7,20 @@
   <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
   <script src="socket.io/socket.io.js"></script>
   <script src="src/multi_connections.js"></script>
-  <script src="src/clmtrackr/clmtrackr.js"></script>
+  <script src="./src/clmtrackr/js/libs/utils.js"></script>
+  <script src="./src/clmtrackr/build/clmtrackr.js"></script>
+  <script src="./src/clmtrackr/models/model_pca_20_svm.js"></script>
+  <script src="./src/clmtrackr/js/libs/Stats.js"></script>
+  <script src="./src/clmtrackr/js/libs/d3.min.js"></script>
+  <script src="./src/clmtrackr/js/emotion_classifier.js"></script>
+  <script src="./src/clmtrackr/js/emotionmodel.js"></script>
 </head>
 
 <body>
   <button type="button" onclick="sendRequest();">Request</button>
   <button type="button" onclick="hangUp();">Hang Up</button>
+  <button type="button" onclick="startVideo();">Start Video</button>
+  <button type="button" onclick="stopVideo();">Stop Video</button>
   <br />
   <ul id="chatList"></ul>
   <input type="text" id="textInput" placeholder="新しいコメントを入力" />
@@ -20,14 +28,9 @@
   <div style="position: relative">
     <video id="remote-video" autoplay style="width: 320px; height: 240px; border: 1px solid black"></video>
   </div>
-  <div style="position: relative">
-    <video id="local-video" autoplay style="width: 320px; height: 240px; border: 1px solid black"></video>
-  </div>
   <script>
-    var localVideo = document.getElementById("local-video");
     var remoteVideo = document.getElementById("remote-video");
     var chatComments = [];
-    // startVideo();
 
     function reloadChatList() {
       const chatList = document.getElementById("chatList");
@@ -288,23 +291,247 @@
       addChatItem("[me] " + newItem);
     }
 
-
-    // function startVideo() {
-    //   navigator.mediaDevices
-    //     .getUserMedia({ video: true, audio: false })
-    //     .then(function (stream) {
-    //       // success
-    //       localStream = stream;
-    //       localVideo.srcObject = stream;
-    //       localVideo.play();
-    //       localVideo.volume = 0;
-    //     })
-    //     .catch(function (error) {
-    //       console.error("An error occurred:");
-    //       console.error(error);
-    //     });
-    // }
   </script>
+		<div id="content">
+			<div id="container">
+				<video id="videoel" width="400" height="300" preload="auto" loop playsinline autoplay>
+				</video>
+				<canvas id="overlay" width="400" height="300"></canvas>
+			</div>
+			<div id="emotion_container">
+				<div id='emotion_chart'></div>
+			</div>
+            <div id="max_emotion"></div>
+
+			<a href="https://github.com/auduno/clmtrackr"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png" alt="Fork me on GitHub"></a>
+			<script>
+				var vid = document.getElementById('videoel');
+				var vid_width = vid.width;
+				var vid_height = vid.height;
+				var overlay = document.getElementById('overlay');
+				var overlayCC = overlay.getContext('2d');
+                var trackingStarted = false;
+                var ctrack;
+
+				/********** check and set up video/webcam **********/
+
+				function enablestart() {
+					var startbutton = document.getElementById('startbutton');
+					startbutton.value = "start";
+					startbutton.disabled = null;
+				}
+
+				function adjustVideoProportions() {
+					// resize overlay and video if proportions are different
+					// keep same height, just change width
+					var proportion = vid.videoWidth/vid.videoHeight;
+					vid_width = Math.round(vid_height * proportion);
+					vid.width = vid_width;
+					overlay.width = vid_width;
+				}
+
+				function gumSuccess( stream ) {
+					// add camera stream if getUserMedia succeeded
+					if ("srcObject" in vid) {
+						vid.srcObject = stream;
+					} else {
+						vid.src = (window.URL && window.URL.createObjectURL(stream));
+					}
+					vid.onloadedmetadata = function() {
+						adjustVideoProportions();
+						vid.play();
+					}
+					vid.onresize = function() {
+						adjustVideoProportions();
+						if (trackingStarted) {
+							ctrack.stop();
+							ctrack.reset();
+							ctrack.start(vid);
+						}
+					}
+				}
+
+				function gumFail() {
+					alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
+				}
+
+				navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+				window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
+
+				// check for camerasupport
+				if (navigator.mediaDevices) {
+					navigator.mediaDevices.getUserMedia({video : true}).then(gumSuccess).catch(gumFail);
+				} else if (navigator.getUserMedia) {
+					navigator.getUserMedia({video : true}, gumSuccess, gumFail);
+				} else {
+					alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
+				}
+
+				vid.addEventListener('canplay', enablestart, false);
+
+				/*********** setup of emotion detection *************/
+
+				// set eigenvector 9 and 11 to not be regularized. This is to better detect motion of the eyebrows
+				pModel.shapeModel.nonRegularizedVectors.push(9);
+				pModel.shapeModel.nonRegularizedVectors.push(11);
+
+				var ctrack = new clm.tracker({useWebGL : true});
+				ctrack.init(pModel);
+				var trackingStarted = false;
+
+				function startVideo() {
+					// start video
+					vid.play();
+					// start tracking
+					ctrack.start(vid);
+					trackingStarted = true;
+					// start loop to draw face
+					drawLoop();
+				}
+
+                function stopVideo() {
+                    // Stop video playback
+                    vid.pause();
+                    vid.currentTime = 0;
+                    // Stop tracking
+                    if (trackingStarted) {
+                        ctrack.stop();
+                        trackingStarted = false;
+                    }
+                }
+
+				function drawLoop() {
+					requestAnimFrame(drawLoop);
+					overlayCC.clearRect(0, 0, vid_width, vid_height);
+					//psrElement.innerHTML = "score :" + ctrack.getScore().toFixed(4);
+					if (ctrack.getCurrentPosition()) {
+						ctrack.draw(overlay);
+					}
+					var cp = ctrack.getCurrentParameters();
+
+					var er = ec.meanPredict(cp);
+					if (er) {
+						updateData(er);
+						// for (var i = 0;i < er.length;i++) {
+						// 	if (er[i].value > 0.4) {
+						// 		document.getElementById('icon'+(i+1)).style.visibility = 'visible';
+						// 	} else {
+						// 		document.getElementById('icon'+(i+1)).style.visibility = 'hidden';
+						// 	}
+						// }
+					}
+				}
+
+				delete emotionModel['disgusted'];
+				delete emotionModel['fear'];
+				var ec = new emotionClassifier();
+				ec.init(emotionModel);
+				var emotionData = ec.getBlank();
+
+                var maxEmotionElement = document.getElementById("max_emotion");
+
+                
+
+				/************ d3 code for barchart *****************/
+
+				var margin = {top : 20, right : 20, bottom : 10, left : 40},
+					width = 400 - margin.left - margin.right,
+					height = 100 - margin.top - margin.bottom;
+
+				var barWidth = 30;
+
+				var formatPercent = d3.format(".0%");
+
+				var x = d3.scale.linear()
+					.domain([0, ec.getEmotions().length]).range([margin.left, width+margin.left]);
+
+				var y = d3.scale.linear()
+					.domain([0,1]).range([0, height]);
+
+				var svg = d3.select("#emotion_chart").append("svg")
+					.attr("width", width + margin.left + margin.right)
+					.attr("height", height + margin.top + margin.bottom)
+
+				svg.selectAll("rect").
+					data(emotionData).
+					enter().
+					append("svg:rect").
+					attr("x", function(datum, index) { return x(index); }).
+					attr("y", function(datum) { return height - y(datum.value); }).
+					attr("height", function(datum) { return y(datum.value); }).
+					attr("width", barWidth).
+					attr("fill", "#2d578b");
+
+				svg.selectAll("text.labels").
+					data(emotionData).
+					enter().
+					append("svg:text").
+					attr("x", function(datum, index) { return x(index) + barWidth; }).
+					attr("y", function(datum) { return height - y(datum.value); }).
+					attr("dx", -barWidth/2).
+					attr("dy", "1.2em").
+					attr("text-anchor", "middle").
+					text(function(datum) { return datum.value;}).
+					attr("fill", "white").
+					attr("class", "labels");
+
+				svg.selectAll("text.yAxis").
+					data(emotionData).
+					enter().append("svg:text").
+					attr("x", function(datum, index) { return x(index) + barWidth; }).
+					attr("y", height).
+					attr("dx", -barWidth/2).
+					attr("text-anchor", "middle").
+					attr("style", "font-size: 12").
+					text(function(datum) { return datum.emotion;}).
+					attr("transform", "translate(0, 18)").
+					attr("class", "yAxis");
+
+				function updateData(data) {
+                    // Find max emotion value
+                    var maxEmotion = data.reduce(function(prev, current) {
+                        return (prev.value > current.value) ? prev : current;
+                    });
+
+                    // Update max emotion element
+                    maxEmotionElement.innerHTML = "Current max emotion: " + maxEmotion.emotion + " (" + maxEmotion.value.toFixed(2) + ")";
+
+                    // Output max emotion to console
+                    console.log("Current max emotion:", maxEmotion.emotion, "(", maxEmotion.value.toFixed(2), ")");
+
+					// update
+					var rects = svg.selectAll("rect")
+						.data(data)
+						.attr("y", function(datum) { return height - y(datum.value); })
+						.attr("height", function(datum) { return y(datum.value); });
+					var texts = svg.selectAll("text.labels")
+						.data(data)
+						.attr("y", function(datum) { return height - y(datum.value); })
+						.text(function(datum) { return datum.value.toFixed(1);});
+
+					// enter
+					rects.enter().append("svg:rect");
+					texts.enter().append("svg:text");
+
+					// exit
+					rects.exit().remove();
+					texts.exit().remove();
+				}
+
+				/******** stats ********/
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				document.getElementById('container').appendChild( stats.domElement );
+
+				// update stats on every iteration
+				document.addEventListener('clmtrackrIteration', function(event) {
+					stats.update();
+				}, false);
+
+			</script>
+		</div>
 </body>
 
 </html>
