@@ -2,9 +2,10 @@
 <html>
 
 <head>
-  <title>broadcast watch</title>
+  <title>Broadcast Watch</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
+  <link rel="stylesheet" href="src/styles.css" type="text/css">
   <script src="socket.io/socket.io.js"></script>
   <script src="src/multi_connections.js"></script>
   <script src="./src/clmtrackr/js/libs/utils.js"></script>
@@ -14,6 +15,29 @@
   <script src="./src/clmtrackr/js/libs/d3.min.js"></script>
   <script src="./src/clmtrackr/js/emotion_classifier.js"></script>
   <script src="./src/clmtrackr/js/emotionmodel.js"></script>
+  <style>
+    #recordingStatus {
+      color: red;
+      font-weight: bold;
+      display: inline-block;
+      margin: 10px;
+    }
+
+    #recordingStatus.recording {
+      color: aliceblue;
+      font-weight: normal;
+      display: inline-block;
+      margin: 10px;
+    }
+
+    #chapterEdit {
+      margin: 10px;
+      width: 720px;
+      height: 100px;
+      background-color: #2D2D2D;
+      color: #fff;
+    }
+  </style>
 </head>
 
 <body>
@@ -420,6 +444,7 @@
     var emotionData = ec.getBlank();
 
     var maxEmotionElement = document.getElementById("max_emotion");
+    var pastEmotionValue;
 
             
 
@@ -488,7 +513,15 @@
       maxEmotionElement.innerHTML = "Current max emotion: " + maxEmotion.emotion + " (" + maxEmotion.value.toFixed(2) + ")";
 
       // Output max emotion to console
-      console.log("Current max emotion:", maxEmotion.emotion, "(", maxEmotion.value.toFixed(2), ")");
+      var currentEmotionValue = maxEmotion.value.toFixed(2);
+      if (currentEmotionValue != pastEmotionValue) {
+        if (currentEmotionValue >= 0.20) {
+          console.log("Current max emotion:", maxEmotion.emotion, "(", currentEmotionValue, ")");
+        } else {
+          console.log("-1");
+        }
+        pastEmotionValue = currentEmotionValue;
+      }
 
       // update
       var rects = svg.selectAll("rect")
