@@ -30,7 +30,7 @@ body {
   border-radius: 10px;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
-  box-shadow: 5px 5px 0px 0px #dedede;
+  box-shadow: 5px 5px 0px 0px #c84e00;
 }
 
 .btn-orange a:hover {
@@ -61,7 +61,7 @@ body {
   border-radius: 10px;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
-  box-shadow: 5px 5px 0px 0px #dedede;
+  box-shadow: 5px 5px 0px 0px #168735;
 }
 .btn-green a:hover {
   background: #168735;
@@ -91,7 +91,7 @@ body {
   border-radius: 10px;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
-  box-shadow: 5px 5px 0px 0px #dedede;
+  box-shadow: 5px 5px 0px 0px #116adb;
 }
 .btn-blue a:hover {
   background: #116adb;

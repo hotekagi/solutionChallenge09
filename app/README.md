@@ -2,7 +2,48 @@
 
 WebRTC による配信
 
-## 使い方
+## pdf-summary.py
+
+### セットアップ
+
+package の install
+
+```shell
+$ python3 -m pip install google-generativeai pyyaml pdf2image pillow PyPDF2
+```
+
+package の他に、poppler を事前に install して PATH を通す
+
+poppler は TeX に付属して知らぬ間に入っている可能性があるらしい
+
+```shell
+# (macOSでHomebrewを使う場合)
+$ brew install poppler
+
+# このコマンドが使えればOK、バージョンは異なっていても動くはず
+$ pdfimages -v
+pdfimages version 24.02.0
+Copyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org
+Copyright 1996-2011, 2022 Glyph & Cog, LLC
+```
+
+### pdf-summary.py 単体での使い方
+
+`pdf-data`の配下に PDF ファイルを置く
+
+`app/pdf-data/example.pdf`に対して実行した場合
+
+```shell
+python3 pdf-summary.py -i example.pdf
+```
+
+出力：
+
+- 標準出力：convert_from_path のログや Gemini API の出力結果全て
+- `pdf-image`：pdf の各ページを画像化したもの
+- `pdf-data/{name}.summary.pdf`：`{name}.pdf`に対する要約結果
+
+## app の使い方
 
 おそらくバージョンは合わせなくても大抵動く。
 
@@ -38,16 +79,18 @@ talk
 
 ## 異なる端末で配信・受信を行う
 
+ngrok を install する
+
 ```shell
-# ngrokをinstall
 # (macOSでHomebrewを使う場合)
 $ brew install ngrok
 
-# アカウント登録
+
+# アカウント登録が必要
 # https://zenn.dev/protoout/articles/47-ngrok-setup-2022
 
 # トークンを登録
-$ ngrok authtoken 前手順で取得したトークン
+$ ngrok config add-authtoken <token>
 
 # localhostをWebサーバとして外部公開
 $ ngrok http ngrok http 9001
