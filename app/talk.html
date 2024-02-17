@@ -104,6 +104,7 @@
         .then(data => {
           console.log(data);
           // ここでsocket.ioを使用してスクリプトの状態を監視できます
+          document.querySelector('#pdf-upload-form input[type="file"]').value = '';
         })
         .catch((error) => {
           console.error('Error:', error);

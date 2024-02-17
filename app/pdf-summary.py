@@ -45,7 +45,7 @@ images = []
 answer = []
 
 for i in range(1, pdf_pages_number + 1):
-    img = Image.open(img_folder.joinpath(f"{pdf_path.stem}0001-{i:02d}.jpg"))
+    img = Image.open(img_folder.joinpath(f"{pdf_path.stem}0001-{i:0{len(str(pdf_pages_number))}}.jpg"))
     response = gemini_pro_vision.generate_content([text, img])
     answer += [response.text]
     print(f"page {i}:\n{response.text}")
