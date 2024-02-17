@@ -330,11 +330,9 @@
 				
     /********** check and set up video/webcam **********/
 
-    function enablestart() {
-      var startbutton = document.getElementById('startbutton');
-      startbutton.value = "start";
-      startbutton.disabled = null;
-    }
+    // function enablestart() {
+    //   vid.play()
+    // }
 
     function adjustVideoProportions() {
       // resize overlay and video if proportions are different
@@ -382,7 +380,7 @@
       alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
     }
 
-    vid.addEventListener('canplay', enablestart, false);
+    // vid.addEventListener('canplay', enablestart, false);
 
     /*********** setup of emotion detection *************/
 
@@ -395,6 +393,7 @@
     var trackingStarted = false;
 
     function startVideo() {
+      console.log("start video.");
       // start video
       vid.play();
       // start tracking
