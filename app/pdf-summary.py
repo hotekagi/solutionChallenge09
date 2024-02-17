@@ -38,17 +38,31 @@ gemini_pro = genai.GenerativeModel("gemini-pro")
 gemini_pro_vision = genai.GenerativeModel("gemini-pro-vision")
 
 
-text = "Read and describe image briefly."
+text = "You are a teacher. You have read the class material and are attempting to summarize it. With this in mind, summarize the images presented in three sentences or less. Please base your summary on what is in the material and avoid adding your own relevance information if at all possible."
 images = []
 answer = []
 
 for i in range(1, pdf_pages_number+1):
-    img = Image.open("image-pdf/" + val + "0001-" + str(i) + ".jpg")
+    if(pdf_pages_number+1 > 99):
+        if(i < 10):
+            img = Image.open("image-pdf/" + val + "0001-00" + str(i) + ".jpg")
+        elif(i < 100):
+            img = Image.open("image-pdf/" + val + "0001-0" + str(i) + ".jpg")
+        else:
+            img = Image.open("image-pdf/" + val + "0001-" + str(i) + ".jpg")
+    elif(pdf_pages_number+1 > 9):
+        if(i < 10):
+            img = Image.open("image-pdf/" + val + "0001-0" + str(i) + ".jpg")
+        else:
+            img = Image.open("image-pdf/" + val + "0001-" + str(i) + ".jpg")
+    else:
+        img = Image.open("image-pdf/" + val + "0001-" + str(i) + ".jpg")
+
     response = gemini_pro_vision.generate_content( [text, img] )
     answer += [response.text]
 
 
 # Output summary of the pdf file, three keywords and one question for review
-prompt = "Read and describe answer briefly. And, based on the three key words you have chosen, create one question for and answer. "
+prompt = "You are a teacher. You have just read the class material page by page and summarized each page. Now read all the summaries you have just read and select five key words. Choose only the words that were included in any of the summaries as keywords. Next, create five questions for students to review based on each of the key words. Create answers to these review questions as well. These questions should be based on the summary of each reading and should add as little information outside of the material as possible. Your output will consist of an overall summary, five key words, review questions, and answers."
 response = gemini_pro.generate_content( [prompt, *answer])
 print(response.text)
