@@ -13,8 +13,12 @@ const server = http.createServer(app)
 const io = new Server(server)
 const port = 9001
 
-app.use('/socket.io', express.static('node_modules/socket.io/dist'))
-app.use('/src', express.static('src'))
+app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/dist')));
+app.use('/src', express.static(path.join(__dirname, 'src')));
+app.use('/clmtrackr', express.static(path.join(__dirname, 'src/clmtrackr')));
+app.use('/js', express.static(path.join(__dirname, 'src/clmtrackr/js')));
+app.use('/lib', express.static(path.join(__dirname, 'src/clmtrackr/js/lib')));
+app.use('/models', express.static(path.join(__dirname, 'src/clmtrackr/models')));
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/view.html')
