@@ -36,7 +36,7 @@
 <body>
   <div class="btn-container">
     <div class='btn-green' onclick="startVideo(event);">
-      <a href=''>Enable Video</a>
+      <a href=''>Turn On Camera</a>
     </div>
   </div>
   <div class="btn-container">
@@ -51,7 +51,7 @@
   </div>
   <div class="btn-container">
     <div class='btn-orange' onclick="stopStream(event);">
-      <a href=''>Stop Sharing</a>
+      <a href=''>Stop Recording</a>
     </div>
   </div>
   <!-- <button type="button" onclick="tellReady();">On Air</button> -->
@@ -73,6 +73,12 @@
   <br>
   <textarea id="chapterEdit" onchange="editChapter(this)"></textarea>
 
+  <br>
+  <form id="pdf-upload-form" action="/pdf-summary" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".pdf" required>
+    <input type="submit" value="Upload PDF">
+  </form>
+
   <script>
     var localVideo = document.getElementById("talk-local-video");
     var localStream = null;
@@ -84,6 +90,25 @@
         return false;
       }
     }
+
+    document.getElementById('pdf-upload-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var formData = new FormData(this);
+
+      fetch('/pdf-summary', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          // ここでsocket.ioを使用してスクリプトの状態を監視できます
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
     //                              
     //           ■                  
     //    ■■■■■  ■                  

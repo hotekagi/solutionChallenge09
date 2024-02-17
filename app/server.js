@@ -4,6 +4,7 @@ const { Server } = require('socket.io')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
+const { exec } = require('child_process')
 
 const BROADCAST_ID = '_broadcast_'
 
@@ -24,7 +25,7 @@ app.get('/talk', (req, res) => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, __dirname + '/uploads/')
+    cb(null, __dirname + '/video-uploads/')
   },
   filename: function (req, file, cb) {
     const timestamp = new Date().toISOString()
@@ -45,6 +46,53 @@ app.post('/upload', upload.single('file'), (req, res) => {
       } else {
         console.log('File has been saved:', req.file.originalname)
         res.json({ success: true, filename: req.file.originalname })
+      }
+    }
+  )
+})
+
+const pdfData = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, __dirname + '/pdf-data/')
+  },
+  filename: function (req, file, cb) {
+    const timestamp = new Date().toISOString()
+    cb(null, 'uploaded-pdf-' + timestamp + path.extname(file.originalname))
+  },
+})
+const pdfUpload = multer({ storage: pdfData })
+app.post('/pdf-summary', pdfUpload.single('file'), (req, res) => {
+  console.log('PDFがアップロードされました:', req.file.originalname)
+
+  fs.rename(
+    req.file.path,
+    path.join(path.dirname(req.file.path), req.file.originalname),
+    function (err) {
+      if (err) {
+        console.log('Failed to rename file:', err)
+        res.json({ success: false, message: 'Failed to rename file.' })
+      } else {
+        console.log('File has been saved:', req.file.originalname)
+        res.json({ success: true, filename: req.file.originalname })
+
+        exec(
+          `python3 pdf-summary.py -i ${req.file.originalname}`,
+          (error, stdout, stderr) => {
+            if (error) {
+              console.log(`Error executing script: ${error}`)
+              io.emit('pdf-summary', {
+                success: false,
+                filename: req.file.originalname,
+              })
+            } else {
+              console.log(`Script output: ${stdout}`)
+              io.emit('pdf-summary', {
+                success: true,
+                filename: req.file.originalname,
+              })
+            }
+          }
+        )
       }
     }
   )
