@@ -41,7 +41,7 @@ python3 pdf-summary.py -i example.pdf
 
 - 標準出力：convert_from_path のログや Gemini API の出力結果全て
 - `pdf-image`：pdf の各ページを画像化したもの
-- `pdf-data/{name}.summary.pdf`：`{name}.pdf`に対する要約結果
+- `pdf-data/{name}.summary.txt`：`{name}.pdf`に対する要約結果
 
 ## app の使い方
 
