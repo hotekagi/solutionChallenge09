@@ -1,6 +1,6 @@
 # SmartSyncSeminar
 
-Novel web-based online seminar tool that synchronizes the feelings and knowledge of viewers and speakers
+Novel web-based online seminar tool that synchronizes the feelings and knowledge between viewers and speakers
 
 ## Software Requirements
 
