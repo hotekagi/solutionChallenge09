@@ -66,6 +66,12 @@ $ python3 pdf-summary.py -i example.pdf
 $ python3 video-transcription.py -i example.pdf
 ```
 
+出力：
+
+- 標準出力：関数のログや音声認識結果、 Gemini API の出力結果全て
+- `video-uploads/{name}.mp3`：webm ファイルの音声を mp3 に変換したもの
+- `video-uploads/{name}.txt`：`{name}.mp3`に対する音声認識と要約の結果
+
 ## app の使い方
 
 おそらくバージョンは合わせなくても大抵動く。
