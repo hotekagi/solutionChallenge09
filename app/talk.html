@@ -107,7 +107,6 @@
         .then(response => response.json())
         .then(data => {
           console.log(data);
-          // ここでsocket.ioを使用してスクリプトの状態を監視できます
           document.querySelector('#pdf-upload-form input[type="file"]').value = '';
         })
         .catch((error) => {
@@ -171,7 +170,7 @@
     }
 
     var chapterList = ["Chapter1", "Chapter2", "Chapter3"];
-    var currentChapter = "";
+    var currentChapter = "Chapter1";
     var chapterSelect = document.getElementById("chapterSelect");
     function reloadChapterList() {
       chapterSelect.innerHTML = "";
@@ -187,10 +186,15 @@
     reloadChapterList();
     function changeChapter(select) {
       currentChapter = chapterList[select.value];
+      socket.emit("message", { type: "chapter", chapter: currentChapter });
     }
     function editChapter(thisElement) {
       chapterList = thisElement.value.split('\n');
       reloadChapterList();
+
+      const select = document.getElementById("chapterSelect");
+      currentChapter = chapterList[select.value];
+      socket.emit("message", { type: "chapter", chapter: currentChapter });
     }
 
     //                                                              
@@ -315,6 +319,7 @@
     //                                           
     var socketReady = false;
     var socket = io.connect();
+    socket.emit("message", { type: "chapter", chapter: currentChapter });
     socket
       .on("connect", onOpened)
       .on("message", onMessage)

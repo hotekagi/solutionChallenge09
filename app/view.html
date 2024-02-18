@@ -15,6 +15,17 @@
   <script src="./src/clmtrackr/js/libs/d3.min.js"></script>
   <script src="./src/clmtrackr/js/emotion_classifier.js"></script>
   <script src="./src/clmtrackr/js/emotionmodel.js"></script>
+  <style>
+    #chapterView {
+      margin: 0px 0px 300px 20px;
+      display: inline-block;
+      color: white;
+    }
+
+    #maxEmotion {
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
@@ -55,12 +66,13 @@
   </div>
 
   <div id="content">
+    <div id="chapterView">Chapter is not set.</div>
     <div id="container" style="position: relative;">
       <video id="videoel" width="400" height="300" preload="auto" loop playsinline autoplay></video>
       <canvas id="overlay" width="400" height="300" preload="auto" loop playsinline autoplay
         style="position: absolute; top: 0; left: 0;"></canvas>
     </div>
-    <div id="max_emotion"></div>
+    <div id="maxEmotion">Press "Start Tracking".</div>
   </div>
 
   <script>
@@ -192,6 +204,11 @@
         case "chat":
           console.log("chat", evt);
           addChatItem({ type: "chat", content: `[${evt.role}] ${evt.chatItem}` });
+          break;
+
+        case "chapter":
+          console.log("chapter", evt);
+          document.getElementById("chapterView").textContent = evt.chapter;
           break;
 
         case "emotion":
@@ -454,7 +471,7 @@
     ec.init(emotionModel);
     var emotionData = ec.getBlank();
 
-    var maxEmotionElement = document.getElementById("max_emotion");
+    var maxEmotionElement = document.getElementById("maxEmotion");
     var pastEmotionValue;
 
 
@@ -532,7 +549,7 @@
       });
 
       // Update max emotion element
-      // maxEmotionElement.innerHTML = "Current max emotion: " + maxEmotion.emotion + " (" + maxEmotion.value.toFixed(2) + ")";
+      maxEmotionElement.innerHTML = "Current max emotion: " + maxEmotion.emotion + " (" + maxEmotion.value.toFixed(2) + ")";
 
       // Output max emotion to console
       var currentEmotionValue = maxEmotion.value.toFixed(2);
