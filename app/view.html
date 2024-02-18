@@ -42,6 +42,10 @@
   <div class="video-and-chat-container">
     <video id="remote-video" autoplay></video>
     <div>
+      <div class="toggle-container">
+        <input type="checkbox" id="toggle-checkbox" style="display: inline-block;">
+        <label for="toggle-checkbox" class="toggle-label">Filter to Chat only</label>
+      </div>
       <div id="chatContainer">
         <ul id="chatList"></ul>
       </div>
@@ -62,6 +66,7 @@
   <script>
     var remoteVideo = document.getElementById("remote-video");
     var chatComments = [];
+
     var vid = document.getElementById('videoel');
     var vid_width = vid.width;
     var vid_height = vid.height;
@@ -72,14 +77,30 @@
     var trackingStarted = false;
     var ctrack;
 
+    var filterToChatOnly = false;
+    var toggleCheckbox = document.getElementById('toggle-checkbox');
+    toggleCheckbox.addEventListener('change', function () {
+      var isChecked = toggleCheckbox.checked;
+      if (isChecked) {
+        filterToChatOnly = true;
+        reloadChatList();
+      } else {
+        filterToChatOnly = false;
+        reloadChatList();
+      }
+    });
+
     function reloadChatList() {
       const chatList = document.getElementById("chatList");
       chatList.innerHTML = "";
       chatComments.forEach((item) => {
+        if (filterToChatOnly && item.type !== "chat") return;
+
         const listItem = document.createElement("li");
-        listItem.textContent = item;
+        listItem.textContent = item.content;
         chatList.appendChild(listItem);
       });
+      document.getElementById("chatContainer").scrollBy(0, chatList.scrollHeight);
     }
 
     function addChatItem(chatItem) {
@@ -170,7 +191,12 @@
 
         case "chat":
           console.log("chat", evt);
-          addChatItem(`[${evt.role}] ${evt.chatItem}`);
+          addChatItem({ type: "chat", content: `[${evt.role}] ${evt.chatItem}` });
+          break;
+
+        case "emotion":
+          console.log("emotion", evt);
+          addChatItem({ type: "emotion", content: `[viewer] ${evt.emotion}` });
           break;
 
         default:
@@ -309,10 +335,11 @@
     function sendChat() {
       const newItem = document.getElementById("textInput").value;
       if (newItem.trim() !== "") {
-        socket.emit("message", { type: "chat", chatItem: newItem, role: "viewer" });
+        socket.emit("message", { type: "chat", chatItem: newItem, role: "viewer", timeStamp: Date.now() });
         document.getElementById("textInput").value = "";
+
+        addChatItem({ type: "chat", content: `[me] ${newItem}` });
       }
-      addChatItem("[me] " + newItem);
     }
 
     /********** check and set up video/webcam **********/
@@ -431,6 +458,17 @@
     var pastEmotionValue;
 
 
+    var emotionToSend = "NOT_DETECTED";
+    var emotionDetectedUnixTime = Date.now();
+    function updateAndSendEmotion() {
+      if (Date.now() - emotionDetectedUnixTime > 2000) {
+        emotionToSend = "NOT_DETECTED";
+      }
+      socket.emit("message", { type: "emotion", emotion: emotionToSend, timeStamp: Date.now() });
+      addChatItem({ type: "emotion", content: `[me] ${emotionToSend}` });
+    }
+    setInterval(updateAndSendEmotion, 1000);
+
 
     /************ d3 code for barchart *****************/
 
@@ -501,6 +539,8 @@
       if (currentEmotionValue != pastEmotionValue) {
         if (currentEmotionValue >= 0.20) {
           console.log("Current max emotion:", maxEmotion.emotion, "(", currentEmotionValue, ")");
+          emotionToSend = maxEmotion.emotion;
+          emotionDetectedUnixTime = Date.now();
         } else {
           console.log("-1");
         }

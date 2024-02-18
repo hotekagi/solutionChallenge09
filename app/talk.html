@@ -58,6 +58,10 @@
   <div class="video-and-chat-container">
     <video id="talk-local-video" autoplay></video>
     <div>
+      <div class="toggle-container">
+        <input type="checkbox" id="toggle-checkbox" style="display: inline-block;">
+        <label for="toggle-checkbox" class="toggle-label">Filter to Chat only</label>
+      </div>
       <div id="chatContainer">
         <ul id="chatList"></ul>
       </div>
@@ -124,12 +128,27 @@
     //                              
     var chatComments = [];
 
+    var filterToChatOnly = false;
+    var toggleCheckbox = document.getElementById('toggle-checkbox');
+    toggleCheckbox.addEventListener('change', function () {
+      var isChecked = toggleCheckbox.checked;
+      if (isChecked) {
+        filterToChatOnly = true;
+        reloadChatList();
+      } else {
+        filterToChatOnly = false;
+        reloadChatList();
+      }
+    });
+
     function reloadChatList() {
       const chatList = document.getElementById("chatList");
       chatList.innerHTML = "";
       chatComments.forEach((item) => {
+        if (filterToChatOnly && item.type !== "chat") return;
+
         const listItem = document.createElement("li");
-        listItem.textContent = item;
+        listItem.textContent = item.content;
         chatList.appendChild(listItem);
       });
       document.getElementById("chatContainer").scrollBy(0, chatList.scrollHeight);
@@ -144,9 +163,10 @@
       const newItem = document.getElementById("textInput").value;
 
       if (newItem.trim() !== "") {
-        socket.emit("message", { type: "chat", chatItem: newItem, role: "host" });
-        addChatItem("[me] " + newItem);
+        socket.emit("message", { type: "chat", chatItem: newItem, role: "host", timeStamp: Date.now() });
         document.getElementById("textInput").value = "";
+
+        addChatItem({ type: "chat", content: `[me] ${newItem}` });
       }
     }
 
@@ -350,7 +370,12 @@
 
         case "chat":
           console.log("chat", evt);
-          addChatItem(`[${evt.role}] ${evt.chatItem}`);
+          addChatItem({ type: "chat", content: `[${evt.role}] ${evt.chatItem}` });
+          break;
+
+        case "emotion":
+          console.log("emotion", evt);
+          addChatItem({ type: "emotion", content: `[viewer] ${evt.emotion}` });
           break;
 
         default:
