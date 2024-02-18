@@ -2,29 +2,42 @@
 
 WebRTC による配信
 
-## pdf-summary.py
+## pdf-summary.py, video-transcription.py
+
+構成要素として Python のサブプログラムを使用する
+
+```shell
+$ python3 -V
+Python 3.11.7
+```
 
 ### セットアップ
 
 package の install
 
 ```shell
-$ python3 -m pip install google-generativeai pyyaml pdf2image pillow PyPDF2
+$ python3 -m pip install google-generativeai pyyaml pdf2image pillow PyPDF2 openai-whisper
 ```
 
-package の他に、poppler を事前に install して PATH を通す
+package の他に、poppler, ffmpeg を事前に install して PATH を通す
 
-poppler は TeX に付属して知らぬ間に入っている可能性があるらしい
+TeX に付属して知らぬ間に入っている可能性があるらしい
 
 ```shell
 # (macOSでHomebrewを使う場合)
 $ brew install poppler
+$ brew install ffmpeg
 
 # このコマンドが使えればOK、バージョンは異なっていても動くはず
 $ pdfimages -v
 pdfimages version 24.02.0
 Copyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org
 Copyright 1996-2011, 2022 Glyph & Cog, LLC
+
+$ ffmpeg -version
+ffmpeg version 6.1.1 Copyright (c) 2000-2023 the FFmpeg developers
+built with Apple clang version 15.0.0 (clang-1500.1.0.2.5)
+...
 ```
 
 ### pdf-summary.py 単体での使い方
@@ -34,7 +47,7 @@ Copyright 1996-2011, 2022 Glyph & Cog, LLC
 `app/pdf-data/example.pdf`に対して実行した場合
 
 ```shell
-python3 pdf-summary.py -i example.pdf
+$ python3 pdf-summary.py -i example.pdf
 ```
 
 出力：
@@ -42,6 +55,16 @@ python3 pdf-summary.py -i example.pdf
 - 標準出力：convert_from_path のログや Gemini API の出力結果全て
 - `pdf-image`：pdf の各ページを画像化したもの
 - `pdf-data/{name}.summary.txt`：`{name}.pdf`に対する要約結果
+
+### video-transcription.py 単体での使い方
+
+`video-uploads`の配下に webm ファイルを置く
+
+`app/video-uploads/example.webm`に対して実行した場合
+
+```shell
+$ python3 video-transcription.py -i example.pdf
+```
 
 ## app の使い方
 

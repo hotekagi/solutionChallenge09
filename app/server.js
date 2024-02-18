@@ -13,12 +13,15 @@ const server = http.createServer(app)
 const io = new Server(server)
 const port = 9001
 
-app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/dist')));
-app.use('/src', express.static(path.join(__dirname, 'src')));
-app.use('/clmtrackr', express.static(path.join(__dirname, 'src/clmtrackr')));
-app.use('/js', express.static(path.join(__dirname, 'src/clmtrackr/js')));
-app.use('/lib', express.static(path.join(__dirname, 'src/clmtrackr/js/lib')));
-app.use('/models', express.static(path.join(__dirname, 'src/clmtrackr/models')));
+app.use(
+  '/socket.io',
+  express.static(path.join(__dirname, 'node_modules/socket.io/dist'))
+)
+app.use('/src', express.static(path.join(__dirname, 'src')))
+app.use('/clmtrackr', express.static(path.join(__dirname, 'src/clmtrackr')))
+app.use('/js', express.static(path.join(__dirname, 'src/clmtrackr/js')))
+app.use('/lib', express.static(path.join(__dirname, 'src/clmtrackr/js/lib')))
+app.use('/models', express.static(path.join(__dirname, 'src/clmtrackr/models')))
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/view.html')
@@ -50,6 +53,25 @@ app.post('/upload', upload.single('file'), (req, res) => {
       } else {
         console.log('File has been saved:', req.file.originalname)
         res.json({ success: true, filename: req.file.originalname })
+      }
+    }
+  )
+
+  exec(
+    `python3 video-transcription.py -i ${req.file.originalname}`,
+    (error, stdout, stderr) => {
+      if (error) {
+        console.log(`Error executing script: ${error}`)
+        io.emit('video-transcription', {
+          success: false,
+          filename: req.file.originalname,
+        })
+      } else {
+        console.log(`Script output: ${stdout}`)
+        io.emit('video-transcription', {
+          success: true,
+          filename: req.file.originalname,
+        })
       }
     }
   )
