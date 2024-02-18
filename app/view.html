@@ -15,29 +15,6 @@
   <script src="./src/clmtrackr/js/libs/d3.min.js"></script>
   <script src="./src/clmtrackr/js/emotion_classifier.js"></script>
   <script src="./src/clmtrackr/js/emotionmodel.js"></script>
-  <style>
-    #recordingStatus {
-      color: red;
-      font-weight: bold;
-      display: inline-block;
-      margin: 10px;
-    }
-
-    #recordingStatus.recording {
-      color: aliceblue;
-      font-weight: normal;
-      display: inline-block;
-      margin: 10px;
-    }
-
-    #chapterEdit {
-      margin: 10px;
-      width: 720px;
-      height: 100px;
-      background-color: #2D2D2D;
-      color: #fff;
-    }
-  </style>
 </head>
 
 <body>
@@ -91,6 +68,7 @@
     var vidStream = null;
     var overlay = document.getElementById('overlay');
     var overlayCC = overlay.getContext('2d');
+    overlayCC.willReadFrequently = true;
     var trackingStarted = false;
     var ctrack;
 
@@ -123,22 +101,6 @@
       }
     }
 
-    function resizeRemoteVideo() {
-      console.log("--resize--");
-      var top_margin = 240;
-      var left_margin = 20;
-      var video_margin = 50;
-
-      var new_width = window.innerWidth - left_margin - video_margin;
-      var new_height = window.innerHeight - top_margin - video_margin;
-      remoteVideo.style.width = new_width + "px";
-      remoteVideo.style.height = new_height + "px";
-      remoteVideo.style.top = top_margin + "px";
-      remoteVideo.style.left = left_margin + "px";
-    }
-    document.body.onresize = resizeRemoteVideo;
-    resizeRemoteVideo();
-
     // ---- only one connection to speaker ----
     const MAX_CONNECTION_COUNT = 1;
     function isConnectPossible() {
@@ -148,8 +110,6 @@
 
     // ------ socket ------
     var socketReady = false;
-    // var port = 9001;
-    // var socket = io.connect("http://localhost:" + port + "/");
     var socket = io.connect();
     socket
       .on("connect", onOpened) // 初めてサーバに接続したとき
@@ -356,11 +316,6 @@
     }
 
     /********** check and set up video/webcam **********/
-
-    // function enablestart() {
-    //   vid.play()
-    // }
-
     function adjustVideoProportions() {
       // resize overlay and video if proportions are different
       // keep same height, just change width
@@ -398,10 +353,7 @@
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
     window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
 
-    // vid.addEventListener('canplay', enablestart, false);
-
     /*********** setup of emotion detection *************/
-
     // set eigenvector 9 and 11 to not be regularized. This is to better detect motion of the eyebrows
     pModel.shapeModel.nonRegularizedVectors.push(9);
     pModel.shapeModel.nonRegularizedVectors.push(11);
