@@ -563,7 +563,8 @@
       });
 
       // Update max emotion element
-      maxEmotionElement.innerHTML = "Current max emotion: " + maxEmotion.emotion + " (" + maxEmotion.value.toFixed(2) + ")";
+      maxEmotionElement.innerHTML = (maxEmotion.value.toFixed(2) >= 0.2) ? 
+      "Current max emotion: " + maxEmotion.emotion + " (" + maxEmotion.value.toFixed(2) + ")" : "No emotion is detected";
 
       // Output max emotion to console
       var currentEmotionValue = maxEmotion.value.toFixed(2);
