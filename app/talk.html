@@ -6,6 +6,7 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <link rel="icon" type="image/svg+xml" href="src/favicon.svg" />
   <link rel="stylesheet" href="src/styles.css" type="text/css">
+  <link rel="stylesheet" href="src/emotion.css" type="text/css">
   <script src="socket.io/socket.io.js"></script>
   <script src="src/multi_connections.js"></script>
   <style>
@@ -148,6 +149,19 @@
 
         const listItem = document.createElement("li");
         listItem.textContent = item.content;
+
+        if (item.type === "emotion" && item.content.includes("NOT_DETECTED")) {
+          listItem.classList.add("emotion-not-detected");
+        } else if ((item.type === "emotion") && item.content.includes("angry")) {
+          listItem.classList.add("emotion-angry");
+        } else if ((item.type === "emotion") && item.content.includes("happy")) {
+          listItem.classList.add("emotion-happy");
+        } else if ((item.type === "emotion") && item.content.includes("sad")) {
+          listItem.classList.add("emotion-sad");
+        } else if ((item.type === "emotion") && item.content.includes("surprised")) {
+          listItem.classList.add("emotion-surprised");
+        }
+
         chatList.appendChild(listItem);
       });
       document.getElementById("chatContainer").scrollBy(0, chatList.scrollHeight);

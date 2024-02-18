@@ -162,7 +162,6 @@ body {
 }
 #chatList li {
   list-style-type: none;
-  margin: 5px;
 }
 
 #textInput {
