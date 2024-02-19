@@ -45,7 +45,7 @@ $ npm start
 
 2. Push "Start Tracking" to start facial emotion recognition.
 
-   Tracking of facial features is implemented by using [clmtrackr, Copyright (c) 2017 Audun Mathias Øygard](https://github.com/auduno/clmtrackr).
+   Tracking of facial features is implemented by using [clmtrackr, MIT License, Copyright (c) 2017 Audun Mathias Øygard](https://github.com/auduno/clmtrackr).
 
    You can see how your emotion was recognized at the bottom of the page. When you want to stop the recognition, push "Stop Tracking".
 
