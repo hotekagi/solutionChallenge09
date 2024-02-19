@@ -1,6 +1,6 @@
 # SmartSyncSeminar
 
-Novel web-based online seminar tool that synchronizes the feelings and knowledge of viewers and speakers
+Novel web-based online seminar tool that synchronizes the feelings and knowledge between viewers and speakers
 
 ## Software Requirements
 
@@ -81,7 +81,11 @@ $ npm start
 
 <br>
 
-Note that if you intend to make it publicly accessible and use it across different terminals, use
+When you put `?room={some_id} ` at the end of the URL,
+another meeting room can be generated according to the value.
+This makes it possible to have multiple meetings on one server at the same time by having the speakers and viewers share the room id in advance and having each meeting use a different room.
+
+If you intend to make it publicly accessible and use it across different terminals, use
 
 - ngrok (https://ngrok.com/docs/getting-started/)
 
