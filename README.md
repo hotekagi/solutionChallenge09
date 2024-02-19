@@ -102,7 +102,7 @@ $ ngrok http 9001
 
 ### Summarize PDF File
 
-Put PDF file under `pdf-data`.
+Put PDF file in the folder `pdf-data`.
 
 When executed against `/path/to/solutionChallenge09/app/pdf-data/example.pdf`:
 
@@ -118,7 +118,7 @@ Output:
 
 ### Transcribe and Summarize the Audio
 
-Put webm file under `video-uploads`.
+Put webm file in the folder `video-uploads`.
 
 When executed against `/path/to/solutionChallenge09/app/video-uploads/example.webm`:
 
