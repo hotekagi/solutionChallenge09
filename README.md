@@ -2,6 +2,8 @@
 
 Novel web-based online seminar tool that synchronizes the feelings and knowledge between viewers and speakers
 
+<br>
+
 ## Software Requirements
 
 - Node.js v16.10.0
@@ -18,6 +20,8 @@ Novel web-based online seminar tool that synchronizes the feelings and knowledge
 
 Note that we expect it to run even with slight version changes, but we tested it only on this specific version.
 
+<br>
+
 ## Setup Envirionment
 
 In the `/path/to/solutionChallenge09/app` directory, execute the following command:
@@ -27,11 +31,15 @@ $ python3 -m pip install google-generativeai pyyaml pdf2image pillow PyPDF2 open
 $ npm install
 ```
 
+<br>
+
 ## Run Main Server
 
 ```shell
 $ npm start
 ```
+
+<br>
 
 ## How to use
 
@@ -100,7 +108,12 @@ $ npm start
 $ ngrok http 9001
 ```
 
-## Run Subprogram
+Sharing of video through this application is only possible within the same network.
+Just prior to submission, it became clear that the clients of this application do not allow WebRTC communication between different networks.
+
+<br>
+
+## Run Subprograms
 
 ### Summarize PDF File
 
