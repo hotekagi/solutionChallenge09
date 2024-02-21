@@ -2,6 +2,8 @@
 
 Novel web-based online seminar tool that synchronizes the feelings and knowledge between viewers and speakers
 
+<br>
+
 ## Software Requirements
 
 - Node.js v16.10.0
@@ -18,6 +20,8 @@ Novel web-based online seminar tool that synchronizes the feelings and knowledge
 
 Note that we expect it to run even with slight version changes, but we tested it only on this specific version.
 
+<br>
+
 ## Setup Envirionment
 
 In the `/path/to/solutionChallenge09/app` directory, execute the following command:
@@ -27,11 +31,15 @@ $ python3 -m pip install google-generativeai pyyaml pdf2image pillow PyPDF2 open
 $ npm install
 ```
 
+<br>
+
 ## Run Main Server
 
 ```shell
 $ npm start
 ```
+
+<br>
 
 ## How to use
 
@@ -44,6 +52,8 @@ $ npm start
    You can also toggle "Filter to Chat only" on, focusing on chat message.
 
 2. Push "Start Tracking" to start facial emotion recognition.
+
+   Tracking of facial features is implemented by using [clmtrackr, MIT License, Copyright (c) 2017 Audun Mathias Øygard](https://github.com/auduno/clmtrackr).
 
    You can see how your emotion was recognized at the bottom of the page. When you want to stop the recognition, push "Stop Tracking".
 
@@ -98,7 +108,12 @@ $ npm start
 $ ngrok http 9001
 ```
 
-## Run Subprogram
+Sharing of video through this application is only possible within the same network.
+Just prior to submission, it became clear that the clients of this application do not allow WebRTC communication between different networks.
+
+<br>
+
+## Run Subprograms
 
 ### Summarize PDF File
 
