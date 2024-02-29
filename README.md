@@ -24,7 +24,15 @@ Note that we expect it to run even with slight version changes, but we tested it
 
 ## Setup Envirionment
 
-In the `/path/to/solutionChallenge09/app` directory, execute the following command:
+In the `/path/to/solutionChallenge09/app` directory,
+
+put `config.yaml` as:
+
+```yaml
+GOOGLE_API_KEY: <your gemini api key>
+```
+
+and execute the following command:
 
 ```shell
 $ python3 -m pip install google-generativeai pyyaml pdf2image pillow PyPDF2 openai-whisper
