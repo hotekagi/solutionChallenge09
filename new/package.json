@@ -1,0 +1,31 @@
+{
+  "name": "new",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "pnpm": ">=7.20.0",
+    "npm": "please_use_pnpm_instead",
+    "yarn": "please_use_pnpm_instead",
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.0.4",
+  "type": "module",
+  "scripts": {
+    "build": "webpack --mode=development"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "livekit-client": "^2.1.0",
+    "multer": "1.4.5-lts.1",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  }
+}
