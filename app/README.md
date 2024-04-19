@@ -122,7 +122,7 @@ $ brew install ngrok
 $ ngrok config add-authtoken <token>
 
 # localhostをWebサーバとして外部公開
-$ ngrok http ngrok http 9001
+$ ngrok http 9001
 ```
 
 https から始まる一時 URL が発行されるので、
