@@ -18,7 +18,7 @@ const io = new Server(server, {
 })
 
 app.use((_, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
+  res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   next()
