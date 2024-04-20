@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const port = 8881
+const port = 8880
 
 const app = express()
 const server = http.createServer(app)
@@ -22,9 +22,6 @@ app.get('/', (req, res) => {
 })
 app.get('/talk', (req, res) => {
   res.sendFile(__dirname + '/talk.html')
-})
-app.get('/talk_test', (req, res) => {
-  res.sendFile(__dirname + '/talk_test.html')
 })
 
 const storage = multer.diskStorage({
@@ -53,25 +50,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
       }
     }
   )
-
-  exec(
-    `python3 video-transcription.py -i ${req.file.originalname}`,
-    (error, stdout, stderr) => {
-      if (error) {
-        console.log(`Error executing script: ${error}`)
-        io.emit('video-transcription', {
-          success: false,
-          filename: req.file.originalname,
-        })
-      } else {
-        console.log(`Script output: ${stdout}`)
-        io.emit('video-transcription', {
-          success: true,
-          filename: req.file.originalname,
-        })
-      }
-    }
-  )
 })
 
 const pdfData = multer.diskStorage({
@@ -97,28 +75,38 @@ app.post('/pdf-summary', pdfUpload.single('file'), (req, res) => {
       } else {
         console.log('File has been saved:', req.file.originalname)
         res.json({ success: true, filename: req.file.originalname })
-
-        exec(
-          `python3 pdf-summary.py -i ${req.file.originalname}`,
-          (error, stdout, stderr) => {
-            if (error) {
-              console.log(`Error executing script: ${error}`)
-              io.emit('pdf-summary', {
-                success: false,
-                filename: req.file.originalname,
-              })
-            } else {
-              console.log(`Script output: ${stdout}`)
-              io.emit('pdf-summary', {
-                success: true,
-                filename: req.file.originalname,
-              })
-            }
-          }
-        )
       }
     }
   )
+})
+
+function getRoomToken(room, identity) {
+  return new Promise((resolve, reject) => {
+    // livekit-cliコマンドを実行
+    exec(
+      `livekit-cli create-token --api-key devkey --api-secret secret --join --room ${room} --identity ${identity} --valid-for 24h`,
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(error)
+          return
+        }
+        // 標準出力からアクセストークンを取得し、余分な空白を取り除く
+        const accessToken = stdout.match(/access token:\s*([^\n]+)/)[1]
+        resolve(accessToken)
+      }
+    )
+  })
+}
+app.post('/get_room_token', express.json(), async (req, res) => {
+  const { room, identity } = req.body
+  try {
+    // get access token by executing livekit-cli command
+    const accessToken = await getRoomToken(room, identity)
+    res.json({ accessToken })
+  } catch (error) {
+    console.error('error:', error)
+    res.status(500).json({ error: 'Internal Server Error' })
+  }
 })
 
 server.listen(port, () => {

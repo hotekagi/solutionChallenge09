@@ -90,7 +90,7 @@ $ npm start
 
 watch
 
-- ブラウザで`localhost:9001/`を開き、Reuest を押して待つ
+- ブラウザで`localhost:9001/`を開き、Request を押して待つ
 
 talk
 

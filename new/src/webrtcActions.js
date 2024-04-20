@@ -8,16 +8,30 @@ import {
   Track,
   ConnectionState,
 } from 'livekit-client'
+import { getRoomName } from './chatActions.js'
 
 let currentRoom = undefined
 let bitrateInterval = undefined
 const defaultDevices = new Map()
 
 export const webrtcActions = {
-  connectToRoom: async (enableCameraAudio = true) => {
+  connectToRoom: async () => {
     const wsURL = `ws://${window.location.hostname}:7880`
-    const token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTM2MDYyMTIsImlzcyI6ImRldmtleSIsIm5hbWUiOiJ1c2VyMSIsIm5iZiI6MTcxMzUxOTgxMiwic3ViIjoidXNlcjEiLCJ2aWRlbyI6eyJyb29tIjoibXktZmlyc3Qtcm9vbSIsInJvb21Kb2luIjp0cnVlfX0.fRMxcCSN3Nk9VHqgEv1fRoaGuUBv6i0O1sTT8w_JRp0'
+    const getTokenResponse = await fetch('/get_room_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        room: getRoomName(),
+        identity: 'speaker',
+      }),
+    })
+    if (!getTokenResponse.ok) {
+      throw new Error(`HTTP error! response: ${getTokenResponse}`)
+    }
+    const responseData = await getTokenResponse.json()
+    const token = responseData.accessToken
 
     const room = new Room()
     await room.prepareConnection(wsURL, token)
@@ -27,11 +41,9 @@ export const webrtcActions = {
       .on(RoomEvent.MediaDevicesChanged, handleDevicesChanged)
       .on(RoomEvent.SignalConnected, async () => {
         console.log(`signal connection established`)
-        if (enableCameraAudio) {
-          await room.localParticipant.enableCameraAndMicrophone()
-          updateButtonsForPublishState()
-          console.log(`enabled camera and microphone`)
-        }
+        await room.localParticipant.enableCameraAndMicrophone()
+        updateButtonsForPublishState()
+        console.log(`enabled camera and microphone`)
       })
       .on(RoomEvent.Disconnected, async () => {
         console.log(`room disconnected`)
@@ -83,6 +95,81 @@ export const webrtcActions = {
     currentRoom = room
     setButtonsForState(true)
 
+    bitrateInterval = setInterval(renderBitrate, 500)
+    return room
+  },
+
+  joinAsViewer: async () => {
+    const wsURL = `ws://${window.location.hostname}:7880`
+    const getTokenResponse = await fetch('/get_room_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        room: getRoomName(),
+        identity: Math.random().toString(32).substring(2),
+      }),
+    })
+    if (!getTokenResponse.ok) {
+      throw new Error(`HTTP error! response: ${getTokenResponse}`)
+    }
+    const responseData = await getTokenResponse.json()
+    const token = responseData.accessToken
+
+    const room = new Room()
+    await room.prepareConnection(wsURL, token)
+    console.log(`prewarmed connection`)
+
+    room
+      .on(RoomEvent.MediaDevicesChanged, handleDevicesChanged)
+      .on(RoomEvent.SignalConnected, async () => {
+        console.log(`signal connection established`)
+      })
+      .on(RoomEvent.Disconnected, async () => {
+        console.log(`room disconnected`)
+        renderParticipant(currentRoom.localParticipant, true)
+        currentRoom.remoteParticipants.forEach((p) => {
+          renderParticipant(p, true)
+        })
+        renderScreenShare(currentRoom)
+
+        const container = document.getElementById('participants-area')
+        if (container) {
+          container.innerHTML = ''
+        }
+        currentRoom = undefined
+      })
+      .on(RoomEvent.LocalTrackPublished, (pub) => {
+        console.log('local track published', pub.trackSid, pub)
+        renderParticipant(room.localParticipant)
+        renderScreenShare(room)
+      })
+      .on(RoomEvent.LocalTrackUnpublished, (pub) => {
+        console.log('local track unpublished', pub.trackSid)
+        renderParticipant(room.localParticipant)
+        renderScreenShare(room)
+      })
+      .on(RoomEvent.ParticipantConnected, async (participant) => {
+        console.log('participant connected', participant.identity)
+      })
+      .on(RoomEvent.TrackSubscribed, (track, pub, participant) => {
+        console.log('track subscribed', track.sid, participant.identity)
+        renderParticipant(participant)
+        renderScreenShare(room)
+      })
+      .on(RoomEvent.TrackUnsubscribed, (track, pub, participant) => {
+        console.log('track unsubscribed', track.sid, participant.identity)
+        renderParticipant(participant)
+        renderScreenShare(room)
+      })
+
+    await room.connect(wsURL, token)
+    console.log(`connected to room`)
+
+    participantConnected(room.localParticipant)
+
+    currentRoom = room
     bitrateInterval = setInterval(renderBitrate, 500)
     return room
   },
@@ -186,12 +273,15 @@ function renderParticipant(participant, remove = false) {
   const container = document.getElementById('participants-area')
   if (!container) return
   const { identity } = participant
+  if (identity !== 'speaker') return
+
   let div = document.getElementById(`participant-${identity}`)
   if (!div && !remove) {
     div = document.createElement('div')
     div.id = `participant-${identity}`
     div.className = 'participant'
-    div.innerHTML = `
+    if (participant instanceof RemoteParticipant) {
+      div.innerHTML = `
               <video id="video-${identity}"></video>
               <audio id="audio-${identity}"></audio>
               <div class="info-bar">
@@ -208,7 +298,32 @@ function renderParticipant(participant, remove = false) {
                   </div>
               </div>
               <progress id="local-volume" max="1" value="0" />
-          `
+              <div class="volume-control">
+                <input id="volume-${identity}" type="range" min="0" max="1" step="0.1" value="1" orient="vertical" />
+              </div>`
+    } else {
+      div.innerHTML = `
+      <video id="video-${identity}"></video>
+      <audio id="audio-${identity}"></audio>
+      <div class="info-bar">
+        <div id="name-${identity}" class="name">
+        </div>
+        <div style="text-align: center;">
+          <span id="codec-${identity}" class="codec">
+          </span>
+          <span id="size-${identity}" class="size">
+          </span>
+          <span id="bitrate-${identity}" class="bitrate">
+          </span>
+        </div>
+        <div class="right">
+          <span id="signal-${identity}"></span>
+          <span id="mic-${identity}" class="mic-on"></span>
+          <span id="e2ee-${identity}" class="e2ee-on"></span>
+        </div>
+      </div>
+      <progress id="local-volume" max="1" value="0" />`
+    }
     container.appendChild(div)
 
     const sizeElm = document.getElementById(`size-${identity}`)

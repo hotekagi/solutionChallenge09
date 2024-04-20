@@ -1,9 +1,13 @@
 .DS_Store
 node_modules
+
 config.yaml
+
 app/video-uploads/*.webm
 app/video-uploads/*.mp3
 app/video-uploads/*.txt
 app/pdf-data/*.pdf
 app/pdf-data/*.txt
 app/pdf-image/*.jpg
+
+client-sdk-js

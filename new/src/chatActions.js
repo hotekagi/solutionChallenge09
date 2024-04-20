@@ -6,7 +6,7 @@ const socket = io.connect()
 socket.emit('message', { type: 'chapter', chapter: currentChapter })
 socket.on('connect', onOpened).on('message', onMessage)
 
-function getRoomName() {
+export function getRoomName() {
   const url = document.location.href
   const args = url.split('?')
   if (args.length > 1) {
@@ -46,6 +46,14 @@ function onMessage(evt) {
   }
 }
 
+export function getSocket() {
+  if (!socketReady) {
+    console.log('socket is not ready.')
+    return null
+  }
+  return socket
+}
+
 const chatComments = []
 
 let filterToChatOnly = false
@@ -81,7 +89,7 @@ function reloadChatList() {
   document.getElementById('chatContainer').scrollBy(0, chatList.scrollHeight)
 }
 
-function addChatItem(chatItem) {
+export function addChatItem(chatItem) {
   // also called in onMessage
   chatComments.push(chatItem)
   reloadChatList()
@@ -106,7 +114,7 @@ export function sendChat() {
 var chapterList = ['Chapter1', 'Chapter2', 'Chapter3']
 var currentChapter = 'Chapter1'
 var chapterSelect = document.getElementById('chapterSelect')
-function reloadChapterList() {
+export function reloadChapterList() {
   chapterSelect.innerHTML = ''
   chapterList.forEach((chapter, index) => {
     const option = document.createElement('option')
@@ -117,7 +125,7 @@ function reloadChapterList() {
   const chapterEdit = document.getElementById('chapterEdit')
   chapterEdit.value = chapterList.join('\n')
 }
-reloadChapterList()
+
 export function changeChapter(select) {
   currentChapter = chapterList[select.value]
   socket.emit('message', { type: 'chapter', chapter: currentChapter })
@@ -129,4 +137,8 @@ export function editChapter(thisElement) {
   const select = document.getElementById('chapterSelect')
   currentChapter = chapterList[select.value]
   socket.emit('message', { type: 'chapter', chapter: currentChapter })
+}
+
+export function getCurrentChapter() {
+  return currentChapter
 }
