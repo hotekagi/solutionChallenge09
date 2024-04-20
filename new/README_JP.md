@@ -103,10 +103,7 @@ Livekit Sample App の Token にて access token を入力し、「Connect」を
 本アプリケーションのサーバを起動する。
 
 ```shell
-# 1 つ目のターミナル
-livekit-server --dev --bind 0.0.0.0
-# 2 つ目のターミナル
-pnpm start
+./run.sh
 ```
 
 ### Viewer
