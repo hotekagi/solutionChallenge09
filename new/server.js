@@ -13,14 +13,22 @@ const port = 8880
 
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server)
+const io = new Server(server, {
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+})
+
+app.use((_, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  next()
+})
 
 app.use('/dist', express.static(path.join(__dirname, 'dist')))
-
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.sendFile(__dirname + '/view.html')
 })
-app.get('/talk', (req, res) => {
+app.get('/talk', (_, res) => {
   res.sendFile(__dirname + '/talk.html')
 })
 
@@ -82,7 +90,7 @@ app.post('/pdf-summary', pdfUpload.single('file'), (req, res) => {
 
 function getRoomToken(room, identity) {
   return new Promise((resolve, reject) => {
-    // livekit-cliコマンドを実行
+    // execute livekit-cli command to get access token
     exec(
       `livekit-cli create-token --api-key devkey --api-secret secret --join --room ${room} --identity ${identity} --valid-for 24h`,
       (error, stdout, stderr) => {
@@ -90,7 +98,6 @@ function getRoomToken(room, identity) {
           reject(error)
           return
         }
-        // 標準出力からアクセストークンを取得し、余分な空白を取り除く
         const accessToken = stdout.match(/access token:\s*([^\n]+)/)[1]
         resolve(accessToken)
       }

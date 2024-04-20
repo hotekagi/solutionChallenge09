@@ -7,6 +7,7 @@ import {
   getCurrentChapter,
   reloadChapterList,
 } from './chatActions.js'
+import { hostname } from './hostname.js'
 
 handleDevicesChanged()
 setTimeout(handleDevicesChanged, 100)
@@ -24,7 +25,7 @@ form.addEventListener('submit', function (e) {
 
   var formData = new FormData(this)
 
-  fetch('/pdf-summary', {
+  fetch(`http://${hostname}:8880/pdf-summary`, {
     method: 'POST',
     body: formData,
   })
@@ -98,7 +99,7 @@ const startRecording = () => {
         formData.append('file', blob, filename)
         formData.append('filename', filename)
 
-        fetch('/upload', {
+        fetch(`http://${hostname}:8880/upload`, {
           method: 'POST',
           body: formData,
         })

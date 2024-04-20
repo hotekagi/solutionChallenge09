@@ -1,8 +1,9 @@
 import io from 'socket.io-client'
+import { hostname } from './hostname.js'
 
 let socketReady = false
 
-const socket = io.connect()
+const socket = io.connect(`http://${hostname}:8880`)
 socket.emit('message', { type: 'chapter', chapter: currentChapter })
 socket.on('connect', onOpened).on('message', onMessage)
 

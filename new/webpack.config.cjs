@@ -14,12 +14,5 @@ module.exports = {
     static: path.join(__dirname, 'dist'),
     port: 8081,
     // livekit-server, server.jsを先に起動しておく
-    proxy: [
-      {
-        context: ['/'],
-        target: 'http://localhost:8881',
-        changeOrigin: true,
-      },
-    ],
   },
 }

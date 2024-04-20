@@ -9,6 +9,7 @@ import {
   ConnectionState,
 } from 'livekit-client'
 import { getRoomName } from './chatActions.js'
+import { hostname } from './hostname.js'
 
 let currentRoom = undefined
 let bitrateInterval = undefined
@@ -16,17 +17,15 @@ const defaultDevices = new Map()
 
 export const webrtcActions = {
   connectToRoom: async () => {
-    const wsURL = `ws://${window.location.hostname}:7880`
-    const getTokenResponse = await fetch('/get_room_token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        room: getRoomName(),
-        identity: 'speaker',
-      }),
-    })
+    const wsURL = `ws://${hostname}:7880`
+    const getTokenResponse = await fetch(
+      `http://${hostname}:8880/get_room_token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ room: getRoomName(), identity: 'speaker' }),
+      }
+    )
     if (!getTokenResponse.ok) {
       throw new Error(`HTTP error! response: ${getTokenResponse}`)
     }
@@ -100,17 +99,18 @@ export const webrtcActions = {
   },
 
   joinAsViewer: async () => {
-    const wsURL = `ws://${window.location.hostname}:7880`
-    const getTokenResponse = await fetch('/get_room_token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        room: getRoomName(),
-        identity: Math.random().toString(32).substring(2),
-      }),
-    })
+    const wsURL = `ws://${hostname}:7880`
+    const getTokenResponse = await fetch(
+      `http://${hostname}:8880/get_room_token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          room: getRoomName(),
+          identity: Math.random().toString(32).substring(2),
+        }),
+      }
+    )
     if (!getTokenResponse.ok) {
       throw new Error(`HTTP error! response: ${getTokenResponse}`)
     }
