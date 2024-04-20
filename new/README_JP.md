@@ -50,6 +50,26 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+さらに、localhost ではないサーバで動かす場合、`src/hostname.js` の `hostname` を適切な IP アドレスに変更する。
+
+```javascript
+// src/hostname.js
+export const hostname = 'localhost'
+```
+
+hostname は以下のように扱われる。
+
+```javascript
+const wsURL = `ws://${hostname}:7880`
+const endpoint = `http://${hostname}:8880/get_room_token`
+```
+
+その後、JS ファイルをバンドルし直す。
+
+```shell
+pnpm webpack
+```
+
 ## Test LiveKit
 
 LiveKit のサンプルアプリを使って、LiveKit サーバ単体が正常に動作しているか確認する。メインのサーバの起動はつぎのセクションで行う。
@@ -78,25 +98,26 @@ livekit-cli create-token --api-key devkey --api-secret secret --join --room my-f
 
 Livekit Sample App の Token にて access token を入力し、「Connect」を押すと、`--identity` に指定したユーザ名で接続される。`--identity` にて異なるユーザ名を指定して別のトークンを生成して使うことで、複数のユーザで接続可能。
 
-## Start Server
+## Start App Server
+
+本アプリケーションのサーバを起動する。
 
 ```shell
+# 1 つ目のターミナル
 livekit-server --dev --bind 0.0.0.0
-```
-
-```shell
+# 2 つ目のターミナル
 pnpm start
 ```
 
 ### Viewer
 
-https://[hostname]:8880 にアクセスすると、Viewer ページが表示される。
+`dist/view.html` にアクセスすると、Viewer ページが表示される。
 Viewer ページで「Request」を押すと、ランダムな文字列のユーザとして WebRTC のオンライン会議に接続され、乱数が被らない限り複数の Viewer が接続可能。「Hung Up」を押すと、接続が切断される。
 「Start Tracking」を押すと、感情認識が開始される。「Stop Tracking」を押すと、感情認識が停止する。
 
-### Talk
+### Speaker
 
-https://[hostname]:8880/talk にアクセスすると、Speaker ページが表示される。
+`dist/talk.html` にアクセスすると、Speaker ページが表示される。
 「Connect」を押すと、ユニークな speaker として WebRTC のオンライン会議に接続される。「Disconnect」を押すと、接続が切断される。
 Microphone、 Camera、Screen Share のオンオフが可能。
 「Start Recording」を押すと、録画が開始され、録画ファイルが `video-uploads` ディレクトリに保存される。「Stop Recording」を押すと、録画が停止する。
