@@ -1,10 +1,14 @@
 # Server for SmartSyncSeminar
 
+Click [here](README_JP.md) for the Japanese version of the README.md.
+
 ## Components
 
 **SFU server using [LiveKit](https://livekit.io/) (port 7880):**
 Enables video calls via WebRTC
-HTTP server using Node.js (port 8880): Handles page rendering, PDF uploads, and recording
+
+**HTTP server using Node.js (port 8880):**
+Handles page rendering, PDF uploads, and recording
 
 **WebSocket server using Node.js (port 8880):**
 Facilitates chat and transmission of emotion recognition results
