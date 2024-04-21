@@ -1,59 +1,65 @@
-#connect-area {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: min-content min-content;
-  grid-auto-flow: column;
-  grid-gap: 10px;
-  margin-bottom: 15px;
-}
-
-#options-area {
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: 1.25rem;
-  margin-right: 1.25rem;
-  column-gap: 3rem;
-  row-gap: 1rem;
-  margin-bottom: 10px;
-}
-
 #actions-area {
   display: grid;
-  grid-template-columns: fit-content(100px) auto;
-  grid-gap: 1.25rem;
+  grid-template-columns: fit-content(100px) auto auto fit-content(100px);
+  grid-gap: 1rem;
+  margin-top: 15px;
   margin-bottom: 15px;
 }
 
 #inputs-area {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-gap: 1.25rem;
+  grid-gap: 1rem;
   margin-bottom: 10px;
 }
 
-#chat-input-area {
-  margin-top: 1.2rem;
+#video-and-chat {
   display: grid;
-  grid-template-columns: auto min-content;
-  gap: 1.25rem;
+  grid-template-columns: 1fr fit-content(300px);
+  grid-gap: 1rem;
+}
+
+#video-area {
+  max-width: 800px;
+  margin: 25px 0;
+}
+
+#chat-send-area {
+  display: grid;
+  grid-template-columns: auto fit-content(100px);
+  grid-gap: 0.5rem;
+  margin-bottom: 10px;
+}
+
+#chatContainer {
+  display: flex;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  min-height: 500px;
+  height: 500px;
+  overflow-y: auto;
+  background-color: white;
+}
+#chatList {
+  padding: 5px;
+}
+#chatList li {
+  white-space: nowrap;
 }
 
 #screenshare-area {
-  position: relative;
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
-  display: none;
+  width: 100%;
 }
 
 #screenshare-area video {
-  max-width: 900px;
-  max-height: 900px;
-  border: 3px solid rgba(0, 0, 0, 0.5);
+  max-width: 800px;
+  max-height: 600px;
+  /* border: 3px solid rgba(0, 0, 0, 0.5); */
 }
 
 #participants-area {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 20px;
 }
 
@@ -67,16 +73,6 @@
   width: 1px;
   height: 0;
   padding-bottom: calc(100% / (16 / 9));
-}
-
-#log-area {
-  margin-top: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-#log {
-  width: 66.6%;
-  height: 100px;
 }
 
 .participant {
@@ -161,4 +157,28 @@
 .participant .volume-meter {
   position: absolute;
   z-index: 4;
+}
+
+#recordingStatus {
+  color: red;
+  font-weight: bold;
+  display: inline-block;
+  margin: 10px;
+  white-space: nowrap;
+}
+
+#recordingStatus.recording {
+  color: slategrey;
+  font-weight: normal;
+  display: inline-block;
+  margin: 10px;
+  white-space: nowrap;
+}
+
+#record-and-pdf-area {
+  display: grid;
+  grid-template-columns: fit-content(140px) fit-content(140px) auto;
+  grid-gap: 1rem;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }

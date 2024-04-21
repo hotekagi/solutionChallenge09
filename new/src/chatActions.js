@@ -4,7 +4,6 @@ import { hostname } from './hostname.js'
 let socketReady = false
 
 const socket = io.connect(`http://${hostname}:8880`)
-socket.emit('message', { type: 'chapter', chapter: currentChapter })
 socket.on('connect', onOpened).on('message', onMessage)
 
 export function getRoomName() {
@@ -39,6 +38,19 @@ function onMessage(evt) {
     case 'emotion':
       console.log('emotion', evt)
       addChatItem({ type: 'emotion', content: `[viewer] ${evt.emotion}` })
+      break
+
+    case 'chapter':
+      console.log('chapter', evt)
+      const chapterView = document.getElementById('chapterView')
+      chapterView.innerText = evt.chapter
+      break
+
+    case 'chapter_request':
+      console.log('chapter_request', evt)
+      setTimeout(() => {
+        sendCurrentChapter()
+      }, 1000)
       break
 
     default:
@@ -142,4 +154,10 @@ export function editChapter(thisElement) {
 
 export function getCurrentChapter() {
   return currentChapter
+}
+export function requestCurrentChapter() {
+  socket.emit('message', { type: 'chapter_request' })
+}
+export function sendCurrentChapter() {
+  socket.emit('message', { type: 'chapter', chapter: currentChapter })
 }

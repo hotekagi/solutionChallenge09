@@ -15,6 +15,10 @@ let currentRoom = undefined
 let bitrateInterval = undefined
 const defaultDevices = new Map()
 
+export function isRoomConnected() {
+  return currentRoom && currentRoom.state === ConnectionState.Connected
+}
+
 export const webrtcActions = {
   connectToRoom: async () => {
     const wsURL = `ws://${hostname}:7880`

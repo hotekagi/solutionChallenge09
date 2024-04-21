@@ -2,6 +2,7 @@ import { webrtcActions } from './webrtcActions.js'
 import { sendChat, getSocket, addChatItem } from './chatActions.js'
 import { facialRecognition } from './facialRecognition.js'
 import { getEmotionAndTime } from './facialRecognition.js'
+import { requestCurrentChapter } from './chatActions.js'
 
 function sendLatestEmotion() {
   const socket = getSocket()
@@ -23,3 +24,9 @@ setInterval(sendLatestEmotion, 1000)
 window.webrtcActions = webrtcActions
 window.facialRecognition = facialRecognition
 window.sendChat = sendChat
+window.requestCurrentChapter = requestCurrentChapter
+window.onload = function () {
+  console.log('window.onload')
+  console.log('requestCurrentChapter')
+  requestCurrentChapter()
+}

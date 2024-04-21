@@ -1,4 +1,8 @@
-import { webrtcActions, handleDevicesChanged } from './webrtcActions.js'
+import {
+  webrtcActions,
+  handleDevicesChanged,
+  isRoomConnected,
+} from './webrtcActions.js'
 import {
   getRoomName,
   sendChat,
@@ -6,6 +10,7 @@ import {
   editChapter,
   getCurrentChapter,
   reloadChapterList,
+  sendCurrentChapter,
 } from './chatActions.js'
 import { hostname } from './hostname.js'
 
@@ -72,6 +77,15 @@ const startRecording = () => {
   if (isRecording) {
     return
   }
+
+  if (!isRoomConnected()) {
+    alert(
+      'To start recording, you must be connected to the room. ' +
+        '(If you are already connected, please wait a little while for the connection to stabilize and try again)'
+    )
+    return
+  }
+
   navigator.mediaDevices
     .getUserMedia({ video: true, audio: true })
     .then((stream) => {
@@ -122,6 +136,10 @@ const startRecording = () => {
     })
 
   stopwatch = setInterval(updateStopwatch, 1000)
+  document.getElementById('recordingStatus').classList.toggle('recording', true)
+  const btn = document.getElementById('toggle-recording')
+  btn.innerText = 'Stop Recording'
+  btn.onclick = stopRecording
 }
 
 const stopRecording = () => {
@@ -135,8 +153,18 @@ const stopRecording = () => {
   seconds = 0
   minutes = 0
   hours = 0
-  document.getElementById('recordingStatus').textContent = 'No Recording'
+
+  const status = document.getElementById('recordingStatus')
+  status.innerText = 'No Recording'
+  status.classList.toggle('recording', false)
+
+  const btn = document.getElementById('toggle-recording')
+  btn.innerText = 'Start Recording'
+  btn.onclick = startRecording
 }
 
 window.startRecording = startRecording
 window.stopRecording = stopRecording
+window.onload = function () {
+  sendCurrentChapter()
+}

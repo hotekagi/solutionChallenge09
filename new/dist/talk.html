@@ -15,144 +15,193 @@
       crossorigin="anonymous"
     />
   </head>
-  <body>
+  <body style="background-color: #f4f5f7">
     <div class="container">
-      <div class="row">
-        <h1>Livekit Sample App</h1>
-        <div id="actions-area">
-          <div>
-            <button
-              id="connect-button"
-              class="btn btn-primary mt-1"
-              type="button"
-              onclick="webrtcActions.connectToRoom()"
-            >
-              Connect
-            </button>
-          </div>
-          <div>
-            <button
-              id="toggle-audio-button"
-              class="btn btn-secondary mt-1"
-              disabled
-              type="button"
-              onclick="webrtcActions.toggleAudio()"
-            >
-              Enable Mic
-            </button>
-            <button
-              id="toggle-video-button"
-              class="btn btn-secondary mt-1"
-              disabled
-              type="button"
-              onclick="webrtcActions.toggleVideo()"
-            >
-              Enable Camera
-            </button>
-            <button
-              id="share-screen-button"
-              class="btn btn-secondary mt-1"
-              disabled
-              type="button"
-              onclick="webrtcActions.shareScreen()"
-            >
-              Share Screen
-            </button>
-            <button
-              id="disconnect-room-button"
-              class="btn btn-danger mt-1"
-              disabled
-              type="button"
-              onclick="webrtcActions.disconnectRoom()"
-            >
-              Disconnect
-            </button>
-          </div>
-        </div>
-        <!-- select media input -->
-        <div id="inputs-area">
-          <div>
-            <select
-              id="video-input"
-              class="custom-select"
-              onchange="webrtcActions.handleDeviceSelected(event)"
-            >
-              <option selected>Video Input (default)</option>
-            </select>
-          </div>
-          <div>
-            <select
-              id="audio-input"
-              class="custom-select"
-              onchange="webrtcActions.handleDeviceSelected(event)"
-            >
-              <option selected>Audio Input (default)</option>
-            </select>
-          </div>
-          <div>
-            <select
-              id="audio-output"
-              class="custom-select"
-              onchange="webrtcActions.handleDeviceSelected(event)"
-            >
-              <option selected>Audio Output (default)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <!-- video -->
-      <div id="screenshare-area">
+      <div id="actions-area">
         <div>
-          <span id="screenshare-info"> </span>
-          <span id="screenshare-resolution"> </span>
-        </div>
-        <video id="screenshare-video" autoplay playsinline></video>
-      </div>
-      <div id="participants-area"></div>
-      <!-- chat -->
-      <div>
-        <div class="toggle-container">
-          <input
-            type="checkbox"
-            id="toggle-checkbox"
-            style="display: inline-block"
-          />
-          <label for="toggle-checkbox" class="toggle-label"
-            >Filter to Chat only</label
+          <button
+            id="connect-button"
+            class="btn btn-primary"
+            type="button"
+            onclick="webrtcActions.connectToRoom()"
           >
+            Connect
+          </button>
         </div>
-        <div id="chatContainer">
-          <ul id="chatList"></ul>
+        <div>
+          <button
+            id="toggle-audio-button"
+            class="btn btn-secondary"
+            disabled
+            type="button"
+            onclick="webrtcActions.toggleAudio()"
+          >
+            Enable Mic
+          </button>
+          <button
+            id="toggle-video-button"
+            class="btn btn-secondary"
+            disabled
+            type="button"
+            onclick="webrtcActions.toggleVideo()"
+          >
+            Enable Camera
+          </button>
+          <button
+            id="share-screen-button"
+            class="btn btn-secondary"
+            disabled
+            type="button"
+            onclick="webrtcActions.shareScreen()"
+          >
+            Share Screen
+          </button>
         </div>
-        <input
-          type="textarea"
-          id="textInput"
-          class="text-input"
-          placeholder="Type your message..."
-        />
-        <button onclick="sendChat()">Send</button>
+        <div style="display: flex">
+          <div style="white-space: nowrap; margin: auto 10px">
+            Current Chapter:
+          </div>
+          <select
+            class="custom-select"
+            id="chapterSelect"
+            onchange="changeChapter(this)"
+          ></select>
+        </div>
+        <div>
+          <button
+            id="disconnect-room-button"
+            class="btn btn-danger"
+            disabled
+            type="button"
+            onclick="webrtcActions.disconnectRoom(); stopRecording();"
+          >
+            Disconnect
+          </button>
+        </div>
       </div>
-      <!-- chapter -->
-      <div class="chapter-header">Chapter Name</div>
-      <label class="selectbox-chapter">
-        <select id="chapterSelect" onchange="changeChapter(this)"></select>
-      </label>
-      <p id="recordingStatus">No Recording</p>
-      <br />
-      <textarea id="chapterEdit" onchange="editChapter(this)"></textarea>
-      <!-- pdf upload -->
-      <br />
-      <form
-        id="pdf-upload-form"
-        action="/pdf-summary"
-        method="post"
-        enctype="multipart/form-data"
-      >
-        <input type="file" name="file" accept=".pdf" required />
-        <input type="submit" value="Upload PDF" />
-      </form>
-      <button onclick="startRecording()">startRecording</button>
-      <button onclick="stopRecording()">stopRecording</button>
+
+      <div id="inputs-area">
+        <div>
+          <select
+            id="video-input"
+            class="custom-select"
+            onchange="webrtcActions.handleDeviceSelected(event)"
+          >
+            <option selected>Video Input (default)</option>
+          </select>
+        </div>
+        <div>
+          <select
+            id="audio-input"
+            class="custom-select"
+            onchange="webrtcActions.handleDeviceSelected(event)"
+          >
+            <option selected>Audio Input (default)</option>
+          </select>
+        </div>
+        <div>
+          <select
+            id="audio-output"
+            class="custom-select"
+            onchange="webrtcActions.handleDeviceSelected(event)"
+          >
+            <option selected>Audio Output (default)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="video-and-chat">
+        <div id="video-area">
+          <div id="screenshare-area">
+            <div>
+              <span id="screenshare-info"> </span>
+              <span id="screenshare-resolution"> </span>
+            </div>
+            <video id="screenshare-video" autoplay playsinline></video>
+          </div>
+          <div id="participants-area"></div>
+        </div>
+        <div>
+          <div class="custom-control custom-checkbox">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="toggle-checkbox"
+            />
+            <label class="custom-control-label" for="toggle-checkbox">
+              Filter to Chat only
+            </label>
+          </div>
+          <div class="rounded border border-balck" id="chatContainer">
+            <ul id="chatList"></ul>
+          </div>
+          <div id="chat-send-area">
+            <input
+              type="textarea"
+              id="textInput"
+              class="form-control"
+              placeholder="Type your message..."
+            />
+            <button class="btn btn-secondary" onclick="sendChat()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="record-and-pdf-area">
+        <button
+          class="btn btn-secondary"
+          id="toggle-recording"
+          onclick="startRecording()"
+          style="width: 140px; white-space: nowrap"
+        >
+          Start Recording
+        </button>
+        <p id="recordingStatus">No Recording</p>
+
+        <div style="margin: auto 0">
+          <form
+            id="pdf-upload-form"
+            action="/pdf-summary"
+            method="post"
+            enctype="multipart/form-data"
+            style="display: flex"
+          >
+            <div class="input-group">
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="inputFile" />
+                <label class="custom-file-label" for="inputFile"
+                  >Select a PDF file (you can also drop it here)</label
+                >
+              </div>
+              <div class="input-group-append">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary input-group-text"
+                  id="inputFileReset"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-success"
+              style="white-space: nowrap"
+            >
+              Upload PDF
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div style="display: flex">
+        <p style="white-space: nowrap; margin: 10px">Edit Chapter List:</p>
+        <textarea
+          class="form-control"
+          id="chapterEdit"
+          onchange="editChapter(this)"
+        ></textarea>
+      </div>
     </div>
     <script src="./talk.bundle.js"></script>
     <link rel="stylesheet" href="./styles.css" />
@@ -160,5 +209,16 @@
       src="https://kit.fontawesome.com/7c1c4c7e9c.js"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+    <script>
+      bsCustomFileInput.init()
+      document
+        .getElementById('inputFileReset')
+        .addEventListener('click', function () {
+          var elem = document.getElementById('inputFile')
+          elem.value = ''
+          elem.dispatchEvent(new Event('change'))
+        })
+    </script>
   </body>
 </html>

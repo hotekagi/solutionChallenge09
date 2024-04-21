@@ -15,63 +15,97 @@
       crossorigin="anonymous"
     />
   </head>
-  <body>
-    <div class="btn-container">
-      <div class="btn-green" onclick="facialRecognition.startVideo(event)">
-        Start Tracking
+  <body style="background-color: #f4f5f7">
+    <div class="container">
+      <div id="actions-area">
+        <div>
+          <button
+            id="connect-button"
+            class="btn btn-primary"
+            type="button"
+            onclick="webrtcActions.joinAsViewer(); requestCurrentChapter();"
+          >
+            Connect
+          </button>
+        </div>
+        <div>
+          <button
+            id="toggle-audio-button"
+            class="btn btn-secondary"
+            type="button"
+            onclick="facialRecognition.startVideo(event)"
+          >
+            Start Tracking
+          </button>
+          <button
+            id="toggle-video-button"
+            class="btn btn-secondary"
+            type="button"
+            onclick="facialRecognition.stopVideo(event)"
+          >
+            Stop Tracking
+          </button>
+        </div>
+        <div style="display: flex">
+          <div style="white-space: nowrap; margin: auto 10px">
+            Current Chapter:
+          </div>
+          <div id="chapterView" style="white-space: nowrap; margin: auto 10px">
+            not set
+          </div>
+        </div>
+        <div>
+          <button
+            id="disconnect-room-button"
+            class="btn btn-danger"
+            disabled
+            type="button"
+            onclick="webrtcActions.disconnectRoom(); stopRecording();"
+          >
+            Disconnect
+          </button>
+        </div>
       </div>
-    </div>
-    <div class="btn-container">
-      <div class="btn-orange" onclick="facialRecognition.stopVideo(event);">
-        Stop Tracking
-      </div>
-    </div>
-    <div class="btn-container">
-      <div class="btn-blue" onclick="webrtcActions.joinAsViewer(false);">
-        Request
-      </div>
-    </div>
-    <div class="btn-container">
-      <div class="btn-red" onclick="webrtcActions.disconnectRoom();">
-        Hang Up
-      </div>
-    </div>
-    <!-- video -->
-    <div id="screenshare-area">
-      <div>
-        <span id="screenshare-info"> </span>
-        <span id="screenshare-resolution"> </span>
-      </div>
-      <video id="screenshare-video" autoplay playsinline></video>
-    </div>
-    <div id="participants-area"></div>
-    <!-- chat -->
-    <div>
-      <div class="toggle-container">
-        <input
-          type="checkbox"
-          id="toggle-checkbox"
-          style="display: inline-block"
-        />
-        <label for="toggle-checkbox" class="toggle-label"
-          >Filter to Chat only</label
-        >
-      </div>
-      <div id="chatContainer">
-        <ul id="chatList"></ul>
-      </div>
-      <input
-        type="textarea"
-        id="textInput"
-        class="text-input"
-        placeholder="Type your message..."
-      />
-      <button onclick="sendChat()">Send</button>
-    </div>
 
-    <div id="content">
-      <div id="chapterView">Chapter is not set.</div>
-      <div id="container" style="position: relative">
+      <div id="video-and-chat">
+        <div id="video-area">
+          <div id="screenshare-area">
+            <div>
+              <span id="screenshare-info"> </span>
+              <span id="screenshare-resolution"> </span>
+            </div>
+            <video id="screenshare-video" autoplay playsinline></video>
+          </div>
+          <div id="participants-area"></div>
+        </div>
+        <div>
+          <div class="custom-control custom-checkbox">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="toggle-checkbox"
+            />
+            <label class="custom-control-label" for="toggle-checkbox">
+              Filter to Chat only
+            </label>
+          </div>
+          <div class="rounded border border-balck" id="chatContainer">
+            <ul id="chatList"></ul>
+          </div>
+          <div id="chat-send-area">
+            <input
+              type="textarea"
+              id="textInput"
+              class="form-control"
+              placeholder="Type your message..."
+            />
+            <button class="btn btn-secondary" onclick="sendChat()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="container" style="position: relative; margin-top: 240px">
+        <div id="maxEmotion">Press "Start Tracking".</div>
         <video
           id="videoel"
           width="400"
@@ -92,8 +126,8 @@
           style="position: absolute; top: 0; left: 0"
         ></canvas>
       </div>
-      <div id="maxEmotion">Press "Start Tracking".</div>
     </div>
+
     <script src="./view.bundle.js"></script>
     <link rel="stylesheet" href="./styles.css" />
     <script
