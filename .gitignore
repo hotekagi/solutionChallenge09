@@ -2,6 +2,7 @@
 node_modules
 
 config.yaml
+*.webm
 
 client-sdk-js
 hostname.js.bak

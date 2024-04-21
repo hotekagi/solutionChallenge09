@@ -24,12 +24,12 @@ app.use((_, res, next) => {
   next()
 })
 
-app.use('/dist', express.static(path.join(__dirname, 'dist')))
+app.use('/', express.static(path.join(__dirname, 'dist')))
 app.get('/', (_, res) => {
-  res.sendFile(__dirname + '/view.html')
+  res.sendFile(__dirname + '/dist/view.html')
 })
 app.get('/talk', (_, res) => {
-  res.sendFile(__dirname + '/talk.html')
+  res.sendFile(__dirname + '/dist/talk.html')
 })
 
 const storage = multer.diskStorage({

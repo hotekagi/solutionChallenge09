@@ -1,13 +1,31 @@
-# Server
+# Server for SmartSyncSeminar
 
 ## 構成要素
 
 - [LiveKit](https://livekit.io/)による SFU サーバ（port 7880）：WebRTC によるビデオ通話
-- Node.js による HTTP サーバ（port 8880）：ページの表示、PDF のアップロード
+- Node.js による HTTP サーバ（port 8880）：ページの表示、PDF や Recording のアップロード
 - Node.js による WebSocket サーバ（port 8880）：チャット・感情認識結果の送受信
 - Python による PDF 要約・動画要約：js ファイルから呼び出され、 VertexAI あるいは Gemini API を使用
 
+サーバがすでに起動済みである場合は、[Change Hostname](#optional-change-hostname) と [Usage](#usage) を参照すること。
+
 ## Setup Environment
+
+動作確認に使用したソフトウェアのバージョンは以下の通り。ただしバージョンはこの通りでなくても近ければ動作すると考えられる。
+
+```shell
+$ node -v
+v20.9.0
+
+$ pnpm -v
+9.0.4
+
+$ livekit-server -v
+livekit-server version 1.6.0
+
+$ livekit-cli -v
+livekit-cli version 1.4.1
+```
 
 Ubuntu でのセットアップ手順
 
@@ -50,6 +68,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+## (Optional) Change Hostname
+
 さらに、localhost ではないサーバで動かす場合、`src/hostname.js` の `hostname` を適切な IP アドレスに変更する。
 
 ```javascript
@@ -57,7 +77,7 @@ pip install -r requirements.txt
 export const hostname = 'localhost'
 ```
 
-hostname は以下のように扱われる。
+hostname は以下のように扱われるため、適切に `hostname` を設定する。
 
 ```javascript
 const wsURL = `ws://${hostname}:7880`
@@ -70,7 +90,7 @@ const endpoint = `http://${hostname}:8880/get_room_token`
 pnpm webpack
 ```
 
-## Test LiveKit
+## (Optional) Test LiveKit
 
 LiveKit のサンプルアプリを使って、LiveKit サーバ単体が正常に動作しているか確認する。メインのサーバの起動はつぎのセクションで行う。
 
@@ -104,21 +124,28 @@ Livekit Sample App の Token にて access token を入力し、「Connect」を
 
 ```shell
 ./run.sh
+
+# または以下の2つのコマンドを別々のターミナルでそれぞれ実行する
+livekit-server --dev --bind 0.0.0.0
+pnpm start
 ```
+
+## Usage
 
 ### Viewer
 
-`dist/view.html` にアクセスすると、Viewer ページが表示される。
-Viewer ページで「Request」を押すと、ランダムな文字列のユーザとして WebRTC のオンライン会議に接続され、乱数が被らない限り複数の Viewer が接続可能。「Hung Up」を押すと、接続が切断される。
-「Start Tracking」を押すと、感情認識が開始される。「Stop Tracking」を押すと、感情認識が停止する。
+`dist/view.html` あるいは `http://${hostname}:8880` にアクセスすると、Viewer ページが表示される。
+Viewer ページで「Connect」を押すと、ランダムな文字列のユーザとして WebRTC のオンライン会議に接続され、乱数が被らない限り複数の Viewer が接続可能。「Disconnect」を押すと、接続が切断される。
+「Start Tracking」を押すと、感情認識が開始される。ページ下部に認識結果がリアルタイムに表示される。「Stop Tracking」を押すと、感情認識が停止する。
 
 ### Speaker
 
-`dist/talk.html` にアクセスすると、Speaker ページが表示される。
-「Connect」を押すと、ユニークな speaker として WebRTC のオンライン会議に接続される。「Disconnect」を押すと、接続が切断される。
+`dist/talk.html` あるいは `http://${hostname}:8880/talk` にアクセスすると、Speaker ページが表示される。
+「Connect」を押すと、ユニークな `speaker` として WebRTC のオンライン会議に接続される。「Disconnect」を押すと、接続が切断される。
 Microphone、 Camera、Screen Share のオンオフが可能。
-「Start Recording」を押すと、録画が開始され、録画ファイルが `video-uploads` ディレクトリに保存される。「Stop Recording」を押すと、録画が停止する。
-Chapter Name で章立ての切り替えが可能。その下のテキストエリアを編集すると、各行が各章の名前して保存され、切り替えの選択肢にも反映される。
+「Start Recording」を押すと、録画が開始される。「Stop Recording」を押すと、録画が停止すると同時に録画ファイルがサーバにアップロードされ `video-uploads` ディレクトリに保存される。保存されたのち自動で音声認識と要約の処理が行われ、その結果もサーバ上に保存される。
+「Current Chapter」で現在の Chapter の切り替えが可能。切り替えと同時に Viewer 側の表示も変更される。下部の「Edit Chapter List」のテキストエリアを編集すると、各行が各 Chapter の名前して保存され、切り替えの選択肢にも反映される。
+「Browse」あるいはドラッグアンドドロップで PDF ファイルを選択することができる。「Delete」ボタンで選択を破棄する。「Upload PDF」を押すと、PDF ファイルがサーバにアップロードされ`pdf-data`ディレクトリに保存される。保存されたのち自動で画像認識と要約の処理が行われ、その結果もサーバ上に保存される。
 
 ### Common
 
