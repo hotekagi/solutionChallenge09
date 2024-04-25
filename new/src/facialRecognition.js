@@ -142,9 +142,9 @@ function updateData(data) {
   const currentEmotionValue = maxEmotion.value.toFixed(2)
   if (currentEmotionValue != pastEmotionValue) {
     if (currentEmotionValue >= 0.2) {
-      console.log(
-        `Current max emotion: ${maxEmotion.emotion} (${currentEmotionValue})`
-      )
+      // console.log(
+      //   `Current max emotion: ${maxEmotion.emotion} (${currentEmotionValue})`
+      // )
       emotionToSend = maxEmotion.emotion
       emotionDetectedUnixTime = Date.now()
     } else {

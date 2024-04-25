@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chart.js": "^4.4.2",
     "d3": "^7.9.0",
     "express": "^4.19.2",
     "livekit-client": "^2.1.0",

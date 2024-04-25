@@ -1,5 +1,10 @@
 import { webrtcActions } from './webrtcActions.js'
-import { sendChat, getSocket, addChatItem } from './chatActions.js'
+import {
+  sendChat,
+  getSocket,
+  addChatItem,
+  updatePieChart,
+} from './chatActions.js'
 import { facialRecognition } from './facialRecognition.js'
 import { getEmotionAndTime } from './facialRecognition.js'
 import { requestCurrentChapter } from './chatActions.js'
@@ -15,18 +20,22 @@ function sendLatestEmotion() {
   socket.emit('message', {
     type: 'emotion',
     emotion: emotionToSend,
-    timeStamp: Date.now(),
+    timeStamp: emotionDetectedUnixTime,
   })
-  addChatItem({ type: 'emotion', content: `[me] ${emotionToSend}` })
+  addChatItem({
+    type: 'emotion',
+    content: `[me] ${emotionToSend}`,
+    timeStamp: emotionDetectedUnixTime,
+  })
 }
 setInterval(sendLatestEmotion, 1000)
+setInterval(updatePieChart, 1000)
 
 window.webrtcActions = webrtcActions
 window.facialRecognition = facialRecognition
 window.sendChat = sendChat
 window.requestCurrentChapter = requestCurrentChapter
 window.onload = function () {
-  console.log('window.onload')
   console.log('requestCurrentChapter')
   requestCurrentChapter()
 }
