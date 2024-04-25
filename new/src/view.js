@@ -4,6 +4,7 @@ import {
   getSocket,
   addChatItem,
   updatePieChart,
+  drawPieChart,
 } from './chatActions.js'
 import { facialRecognition } from './facialRecognition.js'
 import { getEmotionAndTime } from './facialRecognition.js'
@@ -30,6 +31,7 @@ function sendLatestEmotion() {
 }
 setInterval(sendLatestEmotion, 1000)
 setInterval(updatePieChart, 1000)
+drawPieChart()
 
 window.webrtcActions = webrtcActions
 window.facialRecognition = facialRecognition

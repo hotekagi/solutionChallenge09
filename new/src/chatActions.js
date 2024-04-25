@@ -196,7 +196,7 @@ const emotionPieChartItemTS = new Array(100).fill({
   timeStamp: Date.now(),
 })
 
-function drawPieChart() {
+export function drawPieChart() {
   const emotionLabels = ['happy', 'surprised', 'angry', 'sad', 'NOT_DETECTED']
   const emotionCounts = new Array(emotionLabels.length).fill(0)
   emotionPieChartItemTS.forEach((item) => {

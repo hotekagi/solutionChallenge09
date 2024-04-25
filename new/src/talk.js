@@ -12,6 +12,7 @@ import {
   reloadChapterList,
   sendCurrentChapter,
   updatePieChart,
+  drawPieChart,
 } from './chatActions.js'
 import { hostname } from './hostname.js'
 
@@ -21,6 +22,7 @@ reloadChapterList()
 setTimeout(reloadChapterList, 1000)
 
 setInterval(updatePieChart, 1000)
+drawPieChart()
 
 window.webrtcActions = webrtcActions
 window.sendChat = sendChat
