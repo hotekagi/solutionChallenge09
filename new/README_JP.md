@@ -90,6 +90,25 @@ const endpoint = `http://${hostname}:8880/get_room_token`
 pnpm webpack
 ```
 
+### Swap Hostname and Rebundle
+
+上記の手順を簡略化するためのスクリプトが用意している。
+
+`src/hostname.js.bak` を以下のように作成しておく。
+
+```javascript
+// create src/hostname.js.bak and write the following
+export const hostname = '[ip address]'
+```
+
+`swap_hostname_and_rebundle.sh` を 1 度実行すると、`src/hostname.js` が `src/hostname.js.bak` と入れ替わり、`hostname` が `[ip address]` になった状態でバンドルされる。
+
+```shell
+./swap_hostname_and_rebundle.sh
+```
+
+再び`swap_hostname_and_rebundle.sh` を実行すると、`src/hostname.js` が `src/hostname.js.bak` と入れ替わって元に戻り、`hostname` が `localhost` になった状態でバンドルされる。
+
 ## (Optional) Test LiveKit
 
 LiveKit のサンプルアプリを使って、LiveKit サーバ単体が正常に動作しているか確認する。メインのサーバの起動はつぎのセクションで行う。
@@ -130,7 +149,7 @@ livekit-server --dev --bind 0.0.0.0
 pnpm start
 ```
 
-## Usage
+## Usage of SmartSyncSeminar
 
 ### Viewer
 
