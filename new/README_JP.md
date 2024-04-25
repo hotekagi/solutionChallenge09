@@ -151,6 +151,8 @@ pnpm start
 
 ## Usage of SmartSyncSeminar
 
+特に VSCode の拡張機能である [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) を使う場合には、`dist/view.html` あるいは `dist/talk.html` をエディタで開いた状態で Live Server を起動することで、自動的にブラウザが立ち上がり、ページが表示される。
+
 ### Viewer
 
 `dist/view.html` あるいは `http://${hostname}:8880` にアクセスすると、Viewer ページが表示される。
