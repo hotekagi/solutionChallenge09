@@ -174,6 +174,7 @@ export const webrtcActions = {
     participantConnected(room.localParticipant)
 
     currentRoom = room
+    setButtonsForState(true)
     bitrateInterval = setInterval(renderBitrate, 500)
     return room
   },
