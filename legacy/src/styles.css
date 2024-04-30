@@ -1,0 +1,223 @@
+body {
+  background-color: rgb(52, 52, 46);
+  font-family: 'ヒラギノ角ゴ ProN W3', HiraKakuProN-W3, 游ゴシック, 'Yu Gothic',
+    メイリオ, Meiryo, Verdana, Helvetica, Arial, sans-serif;
+}
+
+.btn-container {
+  height: 80px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.btn-orange {
+  width: 240px;
+  height: 60px;
+  line-height: 60px;
+  margin: 5px;
+}
+
+.btn-orange a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  background: #fe690b;
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  box-shadow: 5px 5px 0px 0px #c84e00;
+}
+
+.btn-orange a:hover {
+  background: #ff0000;
+  color: #ffffff;
+  margin-left: 5px;
+  margin-top: 5px;
+  box-shadow: none;
+}
+
+.btn-green {
+  width: 240px;
+  height: 60px;
+  line-height: 60px;
+  margin: 5px;
+  display: inline-block;
+}
+.btn-green a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  background: #1eae4d;
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  box-shadow: 5px 5px 0px 0px #168735;
+}
+.btn-green a:hover {
+  background: #168735;
+  color: #ffffff;
+  margin-left: 5px;
+  margin-top: 5px;
+  box-shadow: none;
+}
+
+.btn-blue {
+  width: 240px;
+  height: 60px;
+  line-height: 60px;
+  margin: 5px;
+  display: inline-block;
+}
+.btn-blue a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  background: #4888f4;
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  box-shadow: 5px 5px 0px 0px #116adb;
+}
+.btn-blue a:hover {
+  background: #116adb;
+  color: #ffffff;
+  margin-left: 5px;
+  margin-top: 5px;
+  box-shadow: none;
+}
+
+.btn-red {
+  width: 240px;
+  height: 60px;
+  line-height: 60px;
+  margin: 5px;
+  display: inline-block;
+}
+.btn-red a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  background: #f44848; /* 赤色 */
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  box-shadow: 5px 5px 0px 0px #ad1111; /* 赤色の影 */
+}
+.btn-red a:hover {
+  background: #ad1111; /* ホバー時の赤色 */
+  color: #ffffff;
+  margin-left: 5px;
+  margin-top: 5px;
+  box-shadow: none; /* ホバー時に影を削除 */
+}
+
+.video-and-chat-container {
+  display: flex;
+}
+
+#talk-local-video,
+#remote-video {
+  width: 720px;
+  height: 540px;
+  border: 1px solid black;
+  background-color: black; /* 読み込み直後の状態を黒くする */
+  margin: 10px;
+}
+
+#chatContainer {
+  display: flex;
+  margin: 10px;
+  min-height: 510px;
+  height: 510px;
+  width: max-content;
+  min-width: 270px;
+  overflow-y: auto;
+  background-color: antiquewhite;
+}
+#chatList {
+  width: 100%;
+  padding: 5px;
+  margin: 0;
+  list-style-type: none;
+}
+#chatList li {
+  list-style-type: none;
+}
+
+#textInput {
+  width: 230px;
+}
+
+.chapter-header {
+  margin: 10px;
+  margin-left: 30px;
+  color: #ffffff;
+  display: inline-block;
+}
+
+.selectbox-chapter {
+  margin: 10px;
+  position: relative;
+  display: inline-block;
+}
+
+.selectbox-chapter::before,
+.selectbox-chapter::after {
+  position: absolute;
+  right: 15px;
+  width: 9px;
+  height: 6px;
+  background-color: #535353;
+  content: '';
+  pointer-events: none;
+}
+
+.selectbox-chapter::before {
+  top: calc(50% - 9px);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.selectbox-chapter::after {
+  bottom: calc(50% - 9px);
+  clip-path: polygon(0 0, 50% 100%, 100% 0);
+}
+
+.selectbox-chapter select {
+  appearance: none;
+  min-width: 230px;
+  height: 36px;
+  padding: 0.4em calc(0.8em + 30px) 0.4em 0.8em;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
+  background-color: #2d2d2d;
+  color: #ffffff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.toggle-container input[type='checkbox'] {
+  transform: scale(1.5); /* チェックボックスのサイズを大きくする */
+}
+.toggle-label {
+  color: #ffffff;
+}
