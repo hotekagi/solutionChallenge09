@@ -1,6 +1,6 @@
 # SmartSyncSeminar
 
-英語版の README は [こちら](README.md) です。
+英語版の README は [こちら](README.md)。
 
 SmartSyncSeminar は、[LiveKit](https://livekit.io/) を用いたシンプルなビデオ会議システムをベースに、AI によるいくつかの補助機能により、プライバシーを担保しつつ、まるで教室にいるかのように生徒の感情や先生が共有したい知識をリアルタイムに同期させることを目指したセミナー用アプリケーションである。
 
