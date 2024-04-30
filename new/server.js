@@ -32,18 +32,18 @@ app.get('/talk', (_, res) => {
   res.sendFile(__dirname + '/dist/talk.html')
 })
 
-const storage = multer.diskStorage({
+const videoUploads = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, __dirname + '/video-uploads/')
+    cb(null, __dirname + '/genai/video-uploads/')
   },
   filename: function (req, file, cb) {
     const timestamp = new Date().toISOString()
     cb(null, 'recorded-video-' + timestamp + path.extname(file.originalname))
   },
 })
-const upload = multer({ storage: storage })
-app.post('/upload', upload.single('file'), (req, res) => {
-  console.log('動画がアップロードされました:', req.file.originalname)
+const submitRecording = multer({ storage: videoUploads })
+app.post('/submit-recording', submitRecording.single('file'), (req, res) => {
+  console.log('Recording was successfully uploaded:', req.file.originalname)
 
   fs.rename(
     req.file.path,
@@ -60,18 +60,18 @@ app.post('/upload', upload.single('file'), (req, res) => {
   )
 })
 
-const pdfData = multer.diskStorage({
+const pdfUploads = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, __dirname + '/pdf-data/')
+    cb(null, __dirname + '/genai/pdf-uploads/')
   },
   filename: function (req, file, cb) {
     const timestamp = new Date().toISOString()
     cb(null, 'uploaded-pdf-' + timestamp + path.extname(file.originalname))
   },
 })
-const pdfUpload = multer({ storage: pdfData })
-app.post('/pdf-summary', pdfUpload.single('file'), (req, res) => {
-  console.log('PDFがアップロードされました:', req.file.originalname)
+const submitPDF = multer({ storage: pdfUploads })
+app.post('/submit-pdf', submitPDF.single('file'), (req, res) => {
+  console.log('pdf was successfully uploaded:', req.file.originalname)
 
   fs.rename(
     req.file.path,

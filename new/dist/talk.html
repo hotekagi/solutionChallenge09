@@ -160,19 +160,20 @@
         <p id="recordingStatus">No Recording</p>
 
         <div style="margin: auto 0">
-          <form
-            id="pdf-upload-form"
-            action="/pdf-summary"
-            method="post"
-            enctype="multipart/form-data"
-            style="display: flex"
-          >
+          <form id="pdf-upload-form" style="display: flex">
             <div class="input-group">
               <div class="custom-file">
-                <input type="file" class="custom-file-input" id="inputFile" />
-                <label class="custom-file-label" for="inputFile"
-                  >Select a PDF file (you can also drop it here)</label
-                >
+                <input
+                  type="file"
+                  name="file"
+                  accept=".pdf"
+                  required
+                  class="custom-file-input"
+                  id="inputFile"
+                />
+                <label class="custom-file-label" for="inputFile">
+                  Select a PDF file (you can also drop it here)
+                </label>
               </div>
               <div class="input-group-append">
                 <button
@@ -184,13 +185,12 @@
                 </button>
               </div>
             </div>
-            <button
+            <input
               type="submit"
               class="btn btn-success"
+              value="Upload PDF"
               style="white-space: nowrap"
-            >
-              Upload PDF
-            </button>
+            />
           </form>
         </div>
       </div>

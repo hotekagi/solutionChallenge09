@@ -30,12 +30,21 @@ window.changeChapter = changeChapter
 window.editChapter = editChapter
 
 const form = document.getElementById('pdf-upload-form')
-form.addEventListener('submit', function (e) {
+form.addEventListener('submit', (e) => {
+  e.stopPropagation()
   e.preventDefault()
 
-  var formData = new FormData(this)
+  var inputFile = document.getElementById('inputFile')
+  var file = inputFile.files[0]
+  if (!file) {
+    console.log('No file selected')
+    return
+  }
 
-  fetch(`http://${hostname}:8880/pdf-summary`, {
+  var formData = new FormData()
+  formData.append('file', file)
+
+  fetch(`http://${hostname}:8880/submit-pdf`, {
     method: 'POST',
     body: formData,
   })
@@ -118,7 +127,7 @@ const startRecording = () => {
         formData.append('file', blob, filename)
         formData.append('filename', filename)
 
-        fetch(`http://${hostname}:8880/upload`, {
+        fetch(`http://${hostname}:8880/submit-recording`, {
           method: 'POST',
           body: formData,
         })
