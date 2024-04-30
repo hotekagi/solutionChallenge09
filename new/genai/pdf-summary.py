@@ -13,20 +13,17 @@ parser.add_argument("--input", "-i", type=str, help="Input PDF file name", requi
 args = parser.parse_args()
 
 
-def load_config(config_file):
-    with open(config_file, "r") as f:
-        config = yaml.safe_load(f)
-    return config
-
-
 # Set the Gemini API key
-config = load_config("config.yaml")
+with open(Path(__file__).parent / "config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
 GOOGLE_API_KEY = config["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
+
 # Convert all pages of a pdf file to jpeg
-pdf_path = Path(__file__).parent / "pdf-data" / str(args.input)
-img_folder = Path(__file__).parent / "pdf-image"
+pdf_path = Path(__file__).parent.joinpath("pdf-uploads", args.input)
+img_folder = Path(__file__).parent / "pdf-images"
 convert_from_path(pdf_path, output_folder=img_folder, fmt="jpeg", output_file=pdf_path.stem)
 
 
@@ -40,27 +37,29 @@ gemini_pro = genai.GenerativeModel("gemini-pro")
 gemini_pro_vision = genai.GenerativeModel("gemini-pro-vision")
 
 
-#text = "You are a teacher. You have read the class material and are attempting to summarize it. With this in mind, summarize the images presented in three sentences or less. Please base your summary on what is in the material and avoid adding your own relevance information if at all possible."
-text = "You are a teacher. You read the class material and summarize it. Please summarize based on what is written in the material and try to add as little of your own pertinent information as possible. Try to choose five key words. Your output will consist of a summary and five key words."
+text = (
+    "You are a teacher. You read the class material and summarize it. "
+    "Please summarize based on what is written in the material and try to add as little of your own pertinent information as possible. "
+    "Try to choose five key words. Your output will consist of a summary and five key words."
+)
 images = []
-answer = []
-
 for i in range(1, pdf_pages_number + 1):
     img = Image.open(img_folder.joinpath(f"{pdf_path.stem}0001-{i:0{len(str(pdf_pages_number))}}.jpg"))
-    #response = gemini_pro_vision.generate_content([text, img])
-    #answer += [response.text]
-    #print(f"page {i}:\n{response.text}")
-    images += [img]
+    images.append(img)
 
-response = gemini_pro_vision.generate_content([text, *images])
-print(response.text)
-answer += [response.text]
+response_img = gemini_pro_vision.generate_content([text, *images])
+print(response_img.text)
 
 # Output summary of the pdf file, three keywords and one question for review
-#prompt = "You are a teacher. You have just read the class material page by page and summarized each page. Now read all the summaries you have just read and select five key words. Choose only the words that were included in any of the summaries as keywords. Next, create five questions for students to review based on each of the key words. Create answers to these review questions as well. These questions should be based on the summary of each reading and should add as little information outside of the material as possible. Your output will consist of an overall summary, five key words, review questions, and answers."
-prompt = "You are a teacher. You have just summarized the class material. Read the entire summary and create five questions for your students to review based on each of the five key words you specified. Create answers to these review questions as well. These questions should be based on the summary of each reading and should add as little information as possible outside of the material. The output will consist of review questions and answers."
-response = gemini_pro.generate_content([prompt, *answer])
-print(response.text)
+prompt = (
+    "You are a teacher. You have just summarized the class material. "
+    "Read the entire summary and create five questions for your students to review based on each of the five key words you specified. "
+    "Create answers to these review questions as well. "
+    "These questions should be based on the summary of each reading and should add as little information as possible outside of the material. "
+    "The output will consist of review questions and answers."
+)
+response_summary = gemini_pro.generate_content([prompt, response_img.text])
+print(response_summary.text)
 
 with open(pdf_path.parent.joinpath(f"{pdf_path.stem}.summary.txt"), "w") as f:
-    f.write(response.text)
+    f.write(response_summary.text)

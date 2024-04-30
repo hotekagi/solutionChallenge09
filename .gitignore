@@ -6,3 +6,5 @@ config.yaml
 
 client-sdk-js
 hostname.js.bak
+
+venv

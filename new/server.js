@@ -55,6 +55,25 @@ app.post('/submit-recording', submitRecording.single('file'), (req, res) => {
       } else {
         console.log('File has been saved:', req.file.originalname)
         res.json({ success: true, filename: req.file.originalname })
+
+        exec(
+          `venv/bin/python genai/video-transcription.py -i '${req.file.originalname}'`,
+          (error, stdout, stderr) => {
+            if (error) {
+              console.log(`Error executing script: ${error}`)
+              io.emit('video-transcription', {
+                success: false,
+                filename: req.file.originalname,
+              })
+            } else {
+              console.log(`Script output: ${stdout}`)
+              io.emit('video-transcription', {
+                success: true,
+                filename: req.file.originalname,
+              })
+            }
+          }
+        )
       }
     }
   )
@@ -83,6 +102,25 @@ app.post('/submit-pdf', submitPDF.single('file'), (req, res) => {
       } else {
         console.log('File has been saved:', req.file.originalname)
         res.json({ success: true, filename: req.file.originalname })
+
+        exec(
+          `venv/bin/python genai/pdf-summary.py -i '${req.file.originalname}'`,
+          (error, stdout, stderr) => {
+            if (error) {
+              console.log(`Error executing script: ${error}`)
+              io.emit('pdf-summary', {
+                success: false,
+                filename: req.file.originalname,
+              })
+            } else {
+              console.log(`Script output: ${stdout}`)
+              io.emit('pdf-summary', {
+                success: true,
+                filename: req.file.originalname,
+              })
+            }
+          }
+        )
       }
     }
   )
