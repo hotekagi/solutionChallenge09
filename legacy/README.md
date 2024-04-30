@@ -1,129 +1,158 @@
-# app
+# SmartSyncSeminar
 
-WebRTC による配信
+Novel web-based online seminar tool that synchronizes the feelings and knowledge between viewers and speakers
 
-## pdf-summary.py, video-transcription.py
+<br>
 
-構成要素として Python のサブプログラムを使用する
+## Software Requirements
 
-```shell
-$ python3 -V
-Python 3.11.7
+- Node.js v16.10.0
+
+  - npm 7.24.0
+
+- Python 3.11.7
+
+- Poppler(https://poppler.freedesktop.org/)
+
+  - pdfimages version 24.02.0
+
+- ffmpeg version 6.1.1(https://ffmpeg.org/)
+
+Note that we expect it to run even with slight version changes, but we tested it only on this specific version.
+
+<br>
+
+## Setup Envirionment
+
+In the `/path/to/solutionChallenge09/app` directory,
+
+put `config.yaml` as:
+
+```yaml
+GOOGLE_API_KEY: <your gemini api key>
 ```
 
-### セットアップ
-
-package の install
+and execute the following command:
 
 ```shell
 $ python3 -m pip install google-generativeai pyyaml pdf2image pillow PyPDF2 openai-whisper
+$ npm install
 ```
 
-package の他に、poppler, ffmpeg を事前に install して PATH を通す
+<br>
 
-TeX に付属して知らぬ間に入っている可能性があるらしい
+## Run Main Server
 
 ```shell
-# (macOSでHomebrewを使う場合)
-$ brew install poppler
-$ brew install ffmpeg
-
-# このコマンドが使えればOK、バージョンは異なっていても動くはず
-$ pdfimages -v
-pdfimages version 24.02.0
-Copyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org
-Copyright 1996-2011, 2022 Glyph & Cog, LLC
-
-$ ffmpeg -version
-ffmpeg version 6.1.1 Copyright (c) 2000-2023 the FFmpeg developers
-built with Apple clang version 15.0.0 (clang-1500.1.0.2.5)
-...
+$ npm start
 ```
 
-### pdf-summary.py 単体での使い方
+<br>
 
-`pdf-data`の配下に PDF ファイルを置く
+## How to use
 
-`app/pdf-data/example.pdf`に対して実行した場合
+### viewer
+
+1. Enter at http://localhost:9001
+
+   You can send chat message, receive message from other participants, and see results of the facial emotion recognition of other viewers if exist.
+
+   You can also toggle "Filter to Chat only" on, focusing on chat message.
+
+2. Push "Start Tracking" to start facial emotion recognition.
+
+   Tracking of facial features is implemented by using [clmtrackr, MIT License, Copyright (c) 2017 Audun Mathias Øygard](https://github.com/auduno/clmtrackr).
+
+   You can see how your emotion was recognized at the bottom of the page. When you want to stop the recognition, push "Stop Tracking".
+
+   This page only send the results of the recognition without exchange unnecessary information. This preserve your privacy.
+
+3. Push "Request" to connect to Server.
+
+   If speaker have started streaming, you can watch it.
+   Otherwise, wait until speaker's streaming starts.
+   When you want to stop watching it, push "Hung Up".
+
+### speaker
+
+1. Enter at http://localhost:9001/talk
+
+   You can send chat message, receive message and emotions from viewers and toggle "Filter to Chat only" on, focusing on chat message.
+
+   Speaker can edit chapter structure by the text area below,
+   and select which chapter is in progress.
+   Changing the chapter also changes the viewer side.
+
+2. Push "Turn On Camera" to say hello.
+
+3. Push "Share Screen" to start lecture with your materials on the device.
+
+4. Don't forget to push "Start Recording" to save your lecture video on the server.
+
+   This app stop recording for saving and uploading it to the server when you push "Stop Recording" or switch between camera and screen sharing.
+
+   These video files are saved to `app/video-uploads` in webm format. The audio in the video is also converted to mp3 file, transcribed, and summarized in txt file.
+
+5. Summarize and create potential questions for students to review by "Chose File" and "Upload PDF".
+
+   The result can see at `app/pdf-data`, pdf file and summary txt file.
+
+<br>
+
+When you put `?room={some_id} ` at the end of the URL,
+another meeting room can be generated according to the value.
+This makes it possible to have multiple meetings on one server at the same time by having the speakers and viewers share the room id in advance and having each meeting use a different room.
+
+If you intend to make it publicly accessible and use it across different terminals, use
+
+- ngrok (https://ngrok.com/docs/getting-started/)
+
+  - install and connect your account
+
+and then command
+
+```shell
+$ npm start
+$ ngrok http 9001
+```
+
+Sharing of video through this application is only possible within the same network.
+Just prior to submission, it became clear that the clients of this application do not allow WebRTC communication between different networks.
+
+<br>
+
+## Run Subprograms
+
+### Summarize PDF File
+
+Put PDF file in the folder `pdf-data`.
+
+When executed against `/path/to/solutionChallenge09/app/pdf-data/example.pdf`:
 
 ```shell
 $ python3 pdf-summary.py -i example.pdf
 ```
 
-出力：
+Output:
 
-- 標準出力：convert_from_path のログや Gemini API の出力結果全て
-- `pdf-image`：pdf の各ページを画像化したもの
-- `pdf-data/{name}.summary.txt`：`{name}.pdf`に対する要約結果
+- standard output: logs of functions and all output results of Gemini API
+- `pdf-image/example0001-{number}.jpg`: image of each page of the pdf
+- `pdf-data/example.summary.txt`: summarized results for `example.pdf`
 
-### video-transcription.py 単体での使い方
+### Transcribe and Summarize the Audio
 
-`video-uploads`の配下に webm ファイルを置く
+Put webm file in the folder `video-uploads`.
 
-`app/video-uploads/example.webm`に対して実行した場合
-
-```shell
-$ python3 video-transcription.py -i example.pdf
-```
-
-出力：
-
-- 標準出力：関数のログや音声認識結果、 Gemini API の出力結果全て
-- `video-uploads/{name}.mp3`：webm ファイルの音声を mp3 に変換したもの
-- `video-uploads/{name}.txt`：`{name}.mp3`に対する音声認識と要約の結果
-
-## app の使い方
-
-おそらくバージョンは合わせなくても大抵動く。
+When executed against `/path/to/solutionChallenge09/app/video-uploads/example.webm`:
 
 ```shell
-$ node -v
-v16.10.0
-$ npm -v
-7.24.0
-
-# install dependencies
-$ npm install
-# start server
-$ npm start
+$ python3 video-transcription.py -i example.webm
 ```
 
-watch
+Output:
 
-- ブラウザで`localhost:9001/`を開き、Request を押して待つ
+- standard output: logs of functions, result of whisper and Gemini
 
-talk
+- `video-uploads/example.mp3`: mp3 file converted from webm
 
-- ブラウザで`localhost:9001/talk/`を開く
-- Start video を押すと、カメラ&マイクが起動して P2P 通信で watch と共有される
-- Start screen を押すと、画面共有&マイクが起動して P2P 通信で watch と共有される
-- Start video と Start screen は交互に切り替え可能
-- Stop stream で配信が止まり watch と共有されなくなる
-
-その他
-
-- talk1 人に対して watch は複数 OK
-- URL の末尾に`?room=[文字列]`を入れると個別ルームを立てられる
-- localhost 以外、他の端末と共有する際には ngrok でサーバを立て、2 つの html 内で socket を`var socket = io.connect("[httpsから始まるURL]");`に変更、Chrome(MacOS)以外での動作は未確認
-
-## 異なる端末で配信・受信を行う
-
-ngrok を install する
-
-```shell
-# (macOSでHomebrewを使う場合)
-$ brew install ngrok
-
-
-# アカウント登録が必要
-# https://zenn.dev/protoout/articles/47-ngrok-setup-2022
-
-# トークンを登録
-$ ngrok config add-authtoken <token>
-
-# localhostをWebサーバとして外部公開
-$ ngrok http 9001
-```
-
-https から始まる一時 URL が発行されるので、
-その URL が view、URL/talk が talk として同様に利用できる。
+- `video-uploads/example.txt`: summarized results for `example.mp3`
