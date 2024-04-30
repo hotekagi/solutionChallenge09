@@ -132,6 +132,7 @@ export const webrtcActions = {
       })
       .on(RoomEvent.Disconnected, async () => {
         console.log(`room disconnected`)
+        setButtonsForConnection(false)
         renderParticipant(currentRoom.localParticipant, true)
         currentRoom.remoteParticipants.forEach((p) => {
           renderParticipant(p, true)
@@ -174,7 +175,7 @@ export const webrtcActions = {
     participantConnected(room.localParticipant)
 
     currentRoom = room
-    setButtonsForState(true)
+    setButtonsForConnection(true)
     bitrateInterval = setInterval(renderBitrate, 500)
     return room
   },
@@ -545,6 +546,13 @@ function setButtonsForState(connected) {
   toggleVideoButton.disabled = notConnected
   toggleAudioButton.disabled = notConnected
   shareScreenButton.disabled = notConnected
+}
+
+function setButtonsForConnection(connected) {
+  const notConnected = !connected
+
+  connectButton.disabled = connected
+  disconnectRoomButton.disabled = notConnected
 }
 
 function updateButtonsForPublishState() {
