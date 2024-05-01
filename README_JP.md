@@ -26,6 +26,8 @@ livekit-cli version 1.4.1
 $ venv/bin/python -V
 Python 3.12.0
 
+# google-generativeaiがPython 3.9 以上を要求する
+
 $ pdfimages -v
 pdfimages version 24.02.0
 Copyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org
@@ -42,7 +44,10 @@ built with Apple clang version 15.0.0 (clang-1500.1.0.2.5)
 ```shell
 # Node.js、npm、Python3、pip、ffmpeg、poppler-utils をインストール
 $ sudo apt update
-$ sudo apt install nodejs npm python3 python3-pip ffmpeg poppler-utils -y
+$ sudo apt install nodejs npm python3 python3-pip python3-venv ffmpeg poppler-utils -y
+
+# ※Ubuntu 20.04 の場合、上記コマンドの 'python3*' を 'python3.9*' にして、以降もpython3コマンドをpython3.9に置き換える必要があることもある
+
 
 # pnpm をインストール
 $ npm install -g pnpm
