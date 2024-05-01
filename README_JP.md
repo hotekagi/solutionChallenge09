@@ -243,7 +243,7 @@ Speaker は、以下の機能を持つ。
 
 「Delete」ボタンで選択を破棄する。
 
-「Upload PDF」を押すと、PDF ファイルがサーバにアップロードされ `pdf-data` ディレクトリに保存される。保存されたのち自動で画像認識と要約の処理が行われ、その結果もサーバ上に保存される。
+「Upload PDF」を押すと、PDF ファイルがサーバにアップロードされ `pdf-uploads` ディレクトリに保存される。保存されたのち自動で画像認識と要約の処理が行われ、その結果もサーバ上に保存される。
 
 ### 3.3. 共通の機能
 
@@ -297,29 +297,29 @@ SmartSyncSeminar/
 ├── README.md
 ├── README_JP.md
 ├── client-sdk-js/                # LiveKit のサンプルアプリ(cloneした場合)
-├── dist                          # 配信用ファイルが置かれるディレクトリ
+├── dist/                         # 配信用ファイルが置かれるディレクトリ
 │   ├── favicon.svg               # favicon
 │   ├── styles.css                # CSS
 │   ├── talk.bundle.js            # talk.html で読み込む JS
 │   ├── talk.html                 # Speaker ページ
 │   ├── view.bundle.js            # view.html で読み込む JS
 │   └── view.html                 # Viewer ページ
-├── genai                         # Gemini API を用いた要約処理のディレクトリ
+├── genai/                        # Gemini API を用いた要約処理のディレクトリ
 │   ├── config.yaml               # API キーを記入するファイル (.gitignore されている)
-│   ├── pdf-images                # PDF ファイルの各ページを画像化したもの
+│   ├── pdf-images/               # PDF ファイルの各ページを画像化したもの
 │   ├── pdf-summary.py            # PDF ファイルの要約処理
-│   ├── pdf-uploads               # アップロードされた PDF ファイルおよび要約結果
+│   ├── pdf-uploads/              # アップロードされた PDF ファイルおよび要約結果
 │   ├── video-transcription.py    # 録画音声の要約処理
-│   └── video-uploads             # アップロードされた録画音声ファイルおよび要約結果
-├── legacy                        # 過去バージョンのファイルを残しているディレクトリ(詳細は内部にある README.md あるいは README_JP.md を参照)
+│   └── video-uploads/            # アップロードされた録画音声ファイルおよび要約結果
+├── legacy/                       # 過去バージョンのファイルを残しているディレクトリ(詳細は内部にある README.md あるいは README_JP.md を参照)
 ├── package.json
 ├── pnpm-lock.yaml
 ├── requirements.txt
 ├── run.sh                        # サーバの起動スクリプト
 ├── server.js                     # HTTPサーバおよびwebsoketサーバの処理が書かれたファイル
-├── src                           # クライアントのソースコードが置かれるディレクトリ
+├── src/                          # クライアントのソースコードが置かれるディレクトリ
 │   ├── chatActions.js            # 部屋管理、Chat、Chapter、感情認識の円グラフ の処理が書かれたファイル
-│   ├── clmtrackr                 # clmtrackr(https://github.com/auduno/clmtrackr) から一部切り出したファイルが置かれるディレクトリ
+│   ├── clmtrackr/                # clmtrackr(https://github.com/auduno/clmtrackr) から一部切り出したファイルが置かれるディレクトリ
 │   │   ├── clmtrackr.module.js
 │   │   └── emotion_classifier.js
 │   ├── facialRecognition.js      # clmtrackrを呼び出して感情認識をする処理が書かれたファイル
