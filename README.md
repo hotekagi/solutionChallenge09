@@ -95,7 +95,7 @@ $ echo "GOOGLE_API_KEY: [API key obtained from Google AI Studio]" > genai/config
 # Or create genai/config.yaml using an editor with the following content
 ```
 
-genai/config.yaml content:
+`genai/config.yaml` content:
 
 ```yaml
 GOOGLE_API_KEY: [API key obtained from Google AI Studio]
@@ -130,7 +130,7 @@ $ livekit-cli create-token --api-key devkey --api-secret secret --join --room my
 
 **Connecting using the token in the Livekit Sample App**
 
-Enter the access token in the Livekit Sample App and click 'Connect' to join with the user name specified in --identity.
+Enter the access token in the Livekit Sample App and click 'Connect' to join with the user name specified in `--identity`.
 
 You can generate tokens with different user names using the `--identity` parameter to connect multiple users.
 
@@ -169,7 +169,7 @@ $ pnpm install
 
 ### 2.2 (Optional) Setting the Server's IP Address
 
-If running on a server other than localhost, change the hostname in src/hostname.js to the appropriate IP address.
+If running on a server other than localhost, change the hostname in `src/hostname.js` to the appropriate IP address.
 
 Create `src/hostname.js.bak` as follows.
 
@@ -202,9 +202,9 @@ There are three ways to launch the client.
 
 1. Use the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension in VSCode, open `dist/view.html` or `dist/talk.html` in the editor, then click the 'Go Live' button in the bottom right of the editor to launch Live Server automatically, which opens the page in a browser.
 
-2. If the server is already running, accessing http://${hostname}:8880 displays the Viewer page. Accessing http://${hostname}:8880/talk displays the Speaker page.
+2. If the server is already running, accessing `http://${hostname}:8880` displays the Viewer page. Accessing `http://${hostname}:8880/talk` displays the Speaker page.
 
-3. Manually open the HTML files under dist/ in a browser.
+3. Manually open the HTML files under `dist/` in a browser.
 
 ## 3. How to Use
 
@@ -224,7 +224,7 @@ The Viewer has the following features:
 
 The Speaker has the following features:
 
-- Press 'Connect' to join a WebRTC online meeting as a unique user named speaker.
+- Press 'Connect' to join a WebRTC online meeting as a unique user named `speaker`.
 
 - Press 'Disconnect' to disconnect from the meeting.
 
@@ -232,7 +232,7 @@ The Speaker has the following features:
 
 - Press 'Start Recording' to begin recording, with the recording time displayed.
 
-- Press 'Stop Recording' to stop recording, simultaneously uploading the recording file to the server and saving it in the video-uploads directory. After saving, automatic voice recognition and summarization processes are performed, and the results are also saved on the server.
+- Press 'Stop Recording' to stop recording, simultaneously uploading the recording file to the server and saving it in the `video-uploads` directory. After saving, automatic voice recognition and summarization processes are performed, and the results are also saved on the server.
 
 - Switch the current Chapter using 'Current Chapter'. Changing chapters also changes the display for the Viewer.
 
@@ -242,7 +242,7 @@ The Speaker has the following features:
 
 - Press the 'Delete' button to discard the selection.
 
-- Press 'Upload PDF' to upload the PDF file to the server, saving it in the pdf-data directory. After saving, automatic image recognition and summarization processes are performed, and the results are also saved on the server.
+- Press 'Upload PDF' to upload the PDF file to the server, saving it in the `pdf-uploads` directory. After saving, automatic image recognition and summarization processes are performed, and the results are also saved on the server.
 
 ### 3.3. Common Features
 
@@ -270,11 +270,11 @@ $ venv/bin/python genai/pdf-summary.py -i example.pdf
 
 Output:
 
-- Standard output: Logs from convert_from_path and all output results from the Gemini API
+- Standard output: Logs from `convert_from_path` and all output results from the Gemini API
 
-- genai/pdf-images: Images of each page of the PDF
+- `genai/pdf-images`: Images of each page of the PDF
 
-- genai/pdf-data/{name}.summary.txt: Summary results for {name}.pdf
+- `genai/pdf-data/{name}.summary.txt`: Summary results for `{name}.pdf`
 
 **Summary Processing of Recorded Audio**
 
@@ -290,8 +290,8 @@ Output:
 
 - Standard output: Function logs, voice recognition results, and all output results from the Gemini API
 
-- genai/video-uploads/{name}.mp3: The audio from the webm file converted to mp3
-- genai/video-uploads/{name}.txt: Voice recognition and summary results for {name}.mp3
+- `genai/video-uploads/{name}.mp3`: The audio from the webm file converted to mp3
+- `genai/video-uploads/{name}.txt`: Voice recognition and summary results for `{name}.mp3`
 
 # 4. File Structure
 
@@ -300,29 +300,29 @@ SmartSyncSeminar/
 ├── README.md
 ├── README_JP.md
 ├── client-sdk-js/                # LiveKit sample app (if cloned)
-├── dist                          # Directory for distribution files
+├── dist/                         # Directory for distribution files
 │   ├── favicon.svg               # favicon
 │   ├── styles.css                # CSS
 │   ├── talk.bundle.js            # JS loaded by talk.html
 │   ├── talk.html                 # Speaker page
 │   ├── view.bundle.js            # JS loaded by view.html
 │   └── view.html                 # Viewer page
-├── genai                         # Directory for summary processing using Gemini API
+├── genai/                        # Directory for summary processing using Gemini API
 │   ├── config.yaml               # File for entering the API key (ignored by .gitignore)
-│   ├── pdf-images                # Images of each page of the PDF file
+│   ├── pdf-images/               # Images of each page of the PDF file
 │   ├── pdf-summary.py            # PDF file summary processing
-│   ├── pdf-uploads               # Uploaded PDF files and summary results
+│   ├── pdf-uploads/              # Uploaded PDF files and summary results
 │   ├── video-transcription.py    # Summary processing of recorded audio
-│   └── video-uploads             # Uploaded recorded audio files and summary results
-├── legacy                        # Directory for keeping past version files (see README.md or README_JP.md inside for details)
+│   └── video-uploads/            # Uploaded recorded audio files and summary results
+├── legacy/                       # Directory for keeping past version files (see README.md or README_JP.md inside for details)
 ├── package.json
 ├── pnpm-lock.yaml
 ├── requirements.txt
 ├── run.sh                        # Server startup script
 ├── server.js                     # File containing HTTP server and WebSocket server processes
-├── src                           # Directory for client source code
+├── src/                          # Directory for client source code
 │   ├── chatActions.js            # File containing room management, Chat, Chapter, and emotion recognition pie chart processes
-│   ├── clmtrackr                 # Directory containing files extracted from clmtrackr (https://github.com/auduno/clmtrackr)
+│   ├── clmtrackr/                # Directory containing files extracted from clmtrackr (https://github.com/auduno/clmtrackr)
 │   │   ├── clmtrackr.module.js
 │   │   └── emotion_classifier.js
 │   ├── facialRecognition.js      # File containing the process that calls clmtrackr for emotion recognition
