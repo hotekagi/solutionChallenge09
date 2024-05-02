@@ -323,6 +323,7 @@ SmartSyncSeminar/
 ├── src/                          # Directory for client source code
 │   ├── chatActions.js            # File containing room management, Chat, Chapter, and emotion recognition pie chart processes
 │   ├── clmtrackr/                # Directory containing files extracted from clmtrackr (https://github.com/auduno/clmtrackr)
+│   │   ├── LICENSE.txt
 │   │   ├── clmtrackr.module.js
 │   │   └── emotion_classifier.js
 │   ├── facialRecognition.js      # File containing the process that calls clmtrackr for emotion recognition

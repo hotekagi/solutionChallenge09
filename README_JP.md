@@ -320,6 +320,7 @@ SmartSyncSeminar/
 ├── src/                          # クライアントのソースコードが置かれるディレクトリ
 │   ├── chatActions.js            # 部屋管理、Chat、Chapter、感情認識の円グラフ の処理が書かれたファイル
 │   ├── clmtrackr/                # clmtrackr(https://github.com/auduno/clmtrackr) から一部切り出したファイルが置かれるディレクトリ
+│   │   ├── LICENSE.txt
 │   │   ├── clmtrackr.module.js
 │   │   └── emotion_classifier.js
 │   ├── facialRecognition.js      # clmtrackrを呼び出して感情認識をする処理が書かれたファイル
