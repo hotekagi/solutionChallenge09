@@ -4,6 +4,16 @@
 
 SmartSyncSeminar は、[LiveKit](https://livekit.io/) を用いたシンプルなビデオ会議システムをベースに、AI によるいくつかの補助機能により、プライバシーを担保しつつ、まるで教室にいるかのように生徒の感情や先生が共有したい知識をリアルタイムに同期させることを目指したセミナー用アプリケーションである。
 
+## 目次
+
+[1. サーバのセットアップと起動](#1-サーバのセットアップと起動)
+
+[2. クライアントのセットアップと起動](#2-クライアントのセットアップと起動)
+
+[3. 使い方](#3-使い方)
+
+[4. ファイル構成](#4-ファイル構成)
+
 ## 1. サーバのセットアップと起動
 
 ### 1.1. 動作確認環境
@@ -172,6 +182,8 @@ $ pnpm install
 
 localhost ではないサーバで動かす場合、`src/hostname.js` の `hostname` を適切な IP アドレスに変更する。
 
+独自にサーバを立てるほか、この [Google ドキュメント](https://docs.google.com/document/d/1fAnrSKLiUf9vi_xpUlQSyxwo1fKcIgpXrU8zzazOqvg/edit)の通り我々の Google Cloud 上のサーバを利用することが可能である。
+
 `src/hostname.js.bak` を以下のように作成しておく。
 
 ```javascript
@@ -179,17 +191,17 @@ localhost ではないサーバで動かす場合、`src/hostname.js` の `hostn
 export const hostname = '[ip address]'
 ```
 
-`swap_hostname_and_rebundle.sh` を 1 度実行すると、`src/hostname.js` が `src/hostname.js.bak` と入れ替わり、`hostname` が `[ip address]` になった状態でバンドルされ、`dist/` 以下のファイルに反映される。
+`swap_hostname_and_rebundle.sh` を 1 度実行すると、`src/hostname.js` が `src/hostname.js.bak` と入れ替わり、`hostname` が `[ip address]` になった状態でバンドルされ、`dist/` 以下のファイルに反映され、IP アドレスが設定は完了する。
 
 ```shell
 $ ./swap_hostname_and_rebundle.sh
 ```
 
-再び`swap_hostname_and_rebundle.sh` を実行すると、`src/hostname.js` が `src/hostname.js.bak` と入れ替わって元に戻り、`hostname` が `localhost` になった状態でバンドルされ、`dist/` 以下のファイルが元に戻る。
+再び`swap_hostname_and_rebundle.sh` を実行した場合には、`src/hostname.js` が `src/hostname.js.bak` と入れ替わって元に戻り、`hostname` が `localhost` になった状態でバンドルされ、`dist/` 以下のファイルが元に戻る。
 
 GitHub に IP アドレスを公開しないように、このような手順を取っている。
 
-### 2.3. (省略可) \*.bundle.js への反映
+### 2.3. (省略可) 追加で独自の変更を加えた際の\*.bundle.js への反映
 
 `src/` 以下のファイルを変更した場合、`pnpm webpack` を実行して `dist/` 以下のファイルに反映させる。
 

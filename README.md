@@ -4,6 +4,16 @@ Japanese version: [README_JP.md](README_JP.md)
 
 SmartSyncSeminar is a seminar application aimed at syncing students' emotions and the knowledge teachers want to share in real-time, as if they were in a classroom, based on a simple video conferencing system using [LiveKit](https://livekit.io/), while ensuring privacy through several AI-assisted features.
 
+## Table of Contents
+
+[1. Server Setup and Launch](#1-server-setup-and-launch)
+
+[2. Client Setup and Launch](#2-client-setup-and-launch)
+
+[3. How to Use](#3-how-to-use)
+
+[4. File Structure](#4-file-structure)
+
 ## 1. Server Setup and Launch
 
 ### 1.1. Environment Verification
@@ -171,6 +181,8 @@ $ pnpm install
 
 If running on a server other than localhost, change the hostname in `src/hostname.js` to the appropriate IP address.
 
+In addition to setting up your own server, you can use our Google Cloud as shown in this [Google Docs](https://docs.google.com/document/d/1pjWlAC4O1NRFcoF0I3YCSk7cA6HhpZrOuChXbRD-aTQ/edit).
+
 Create `src/hostname.js.bak` as follows.
 
 ```javascript
@@ -188,7 +200,7 @@ Running `swap_hostname_and_rebundle.sh` again swaps back to the original, bundli
 
 This procedure is followed to avoid publishing IP addresses on GitHub.
 
-### 2.3. (Optional) Reflecting Changes in \*.bundle.js
+### 2.3. (Optional) Reflection in \*.bundle.js when additional proprietary changes are made
 
 If files under `src/` are modified, execute pnpm webpack to reflect the changes in the files under `dist/`.
 
